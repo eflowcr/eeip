@@ -23,6 +23,7 @@ export class AppComponent implements OnInit {
   private apiUrl = 'http://localhost:10000/api/v1';
 
   // Configuración de cuenta
+  accounts: any[] = [];
   newAccount = {
     email_address: '',
     imap_host: '',
@@ -35,10 +36,24 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.loadImportantEmails();
+    this.loadAccounts();
     this.inbox = [];
     this.risks = [];
     this.commitments = [];
     this.contacts = [];
+  }
+
+  loadAccounts() {
+    this.http.get<any[]>(`${this.apiUrl}/accounts`).subscribe({
+      next: (data) => {
+        if (data) {
+          this.accounts = data;
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando cuentas', err);
+      }
+    });
   }
 
   loadImportantEmails() {
@@ -66,6 +81,7 @@ export class AppComponent implements OnInit {
         this.isSavingAccount = false;
         this.accountSuccessMessage = '¡Cuenta configurada y guardada exitosamente!';
         this.newAccount = { email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '' };
+        this.loadAccounts();
       },
       error: (err) => {
         this.isSavingAccount = false;
