@@ -25,9 +25,9 @@ func NewAccountRepository(db *sqlx.DB) AccountRepository {
 func (r *accountRepository) CreateAccount(ctx context.Context, account *models.EmailAccount) error {
 	query := `
 		INSERT INTO email_accounts (
-			user_id, email_address, imap_host, imap_port, imap_user, imap_password
+			user_id, email_address, account_name, imap_host, imap_port, imap_user, imap_password
 		) VALUES (
-			:user_id, :email_address, :imap_host, :imap_port, :imap_user, :imap_password
+			:user_id, :email_address, :account_name, :imap_host, :imap_port, :imap_user, :imap_password
 		) RETURNING id, created_at, updated_at
 	`
 	rows, err := r.db.NamedQueryContext(ctx, query, account)
@@ -63,6 +63,7 @@ func (r *accountRepository) UpdateAccount(ctx context.Context, account *models.E
 	query := `
 		UPDATE email_accounts SET
 			email_address = :email_address,
+			account_name = :account_name,
 			imap_host = :imap_host,
 			imap_port = :imap_port,
 			imap_user = :imap_user,

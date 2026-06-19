@@ -26,6 +26,7 @@ export class AppComponent implements OnInit {
   // Configuración de cuenta
   accounts: any[] = [];
   newAccount: any = {
+    account_name: '',
     email_address: '',
     imap_host: '',
     imap_port: 993,
@@ -140,7 +141,7 @@ export class AppComponent implements OnInit {
   }
 
   resetAccountForm() {
-    this.newAccount = { email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '' };
+    this.newAccount = { account_name: '', email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '' };
     this.editingAccountId = null;
     this.accountSuccessMessage = '';
     this.accountErrorMessage = '';

@@ -65,7 +65,7 @@ func (r *emailRepository) GetEmailsByAccount(ctx context.Context, accountID stri
 
 func (r *emailRepository) GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error) {
 	var emails []models.Email
-	query := `SELECT e.*, a.email_address as monitored_account
+	query := `SELECT e.*, COALESCE(NULLIF(a.account_name, ''), a.email_address) as monitored_account
 	          FROM emails e
 	          JOIN email_accounts a ON e.account_id = a.id
 	          WHERE (e.priority IN ('Critical', 'High') OR e.requires_action = true)
@@ -78,7 +78,7 @@ func (r *emailRepository) GetImportantEmails(ctx context.Context, limit int) ([]
 
 func (r *emailRepository) GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error) {
 	var emails []models.Email
-	query := `SELECT e.*, a.email_address as monitored_account
+	query := `SELECT e.*, COALESCE(NULLIF(a.account_name, ''), a.email_address) as monitored_account
 	          FROM emails e
 	          JOIN email_accounts a ON e.account_id = a.id
 	          ORDER BY e.received_at DESC LIMIT $1`

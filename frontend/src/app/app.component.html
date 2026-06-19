@@ -176,6 +176,11 @@
               
               <form class="mt-5 space-y-4" (ngSubmit)="saveAccount()">
                 <div>
+                  <label class="block text-sm font-medium text-gray-700">Nombre de la Cuenta (Para el Dashboard)</label>
+                  <input type="text" name="account_name" [(ngModel)]="newAccount.account_name" required class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej. Juan Perez (Ventas)">
+                </div>
+
+                <div>
                   <label class="block text-sm font-medium text-gray-700">Dirección de Correo</label>
                   <input type="email" name="email" [(ngModel)]="newAccount.email_address" required class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md py-2 px-3 border focus:ring-indigo-500 focus:border-indigo-500" placeholder="ejecutivo@empresa.com">
                 </div>
