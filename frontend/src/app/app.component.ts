@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,7 @@ export class AppComponent implements OnInit {
   activeTab = 'dashboard';
 
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
   private apiUrl = 'http://localhost:10000/api/v1';
 
   // Configuración de cuenta
@@ -91,10 +92,12 @@ export class AppComponent implements OnInit {
         this.accountSuccessMessage = this.editingAccountId ? '¡Cuenta actualizada exitosamente!' : '¡Cuenta configurada y guardada exitosamente!';
         this.resetAccountForm();
         this.loadAccounts();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.isSavingAccount = false;
         this.accountErrorMessage = 'Error al guardar la cuenta. Revisa la conexión con el servidor.';
+        this.cdr.detectChanges();
       }
     });
   }
@@ -141,11 +144,13 @@ export class AppComponent implements OnInit {
       next: () => {
         this.isTestingConnection = false;
         this.accountSuccessMessage = '¡Conexión IMAP exitosa! Las credenciales son válidas.';
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.isTestingConnection = false;
         const msg = err.error?.details || 'Credenciales inválidas o servidor inalcanzable.';
         this.accountErrorMessage = `Error IMAP: ${msg}`;
+        this.cdr.detectChanges();
       }
     });
   }
