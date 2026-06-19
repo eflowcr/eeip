@@ -21,7 +21,7 @@ type EmailAccount struct {
 	IMAPHost      string     `json:"imap_host" db:"imap_host"`
 	IMAPPort      int        `json:"imap_port" db:"imap_port"`
 	IMAPUser      string     `json:"imap_user" db:"imap_user"`
-	IMAPPassword  string     `json:"-" db:"imap_password"`
+	IMAPPassword  string     `json:"imap_password,omitempty" db:"imap_password"`
 	LastSyncDate  *time.Time `json:"last_sync_date" db:"last_sync_date"`
 	IsActive      bool       `json:"is_active" db:"is_active"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`

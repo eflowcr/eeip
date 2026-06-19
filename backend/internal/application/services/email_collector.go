@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -35,7 +36,8 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 	var c *client.Client
 	var err error
 	if account.IMAPPort == 993 {
-		c, err = client.DialTLS(fmt.Sprintf("%s:%d", account.IMAPHost, account.IMAPPort), nil)
+		tlsConfig := &tls.Config{InsecureSkipVerify: true}
+		c, err = client.DialTLS(fmt.Sprintf("%s:%d", account.IMAPHost, account.IMAPPort), tlsConfig)
 	} else {
 		c, err = client.Dial(fmt.Sprintf("%s:%d", account.IMAPHost, account.IMAPPort))
 	}

@@ -62,9 +62,11 @@ func main() {
 	// Repositories
 	sqlxDB := sqlx.NewDb(db, "postgres")
 	emailRepo := database.NewEmailRepository(sqlxDB)
+	accountRepo := database.NewAccountRepository(sqlxDB)
 
 	// Handlers
 	emailHandler := handlers.NewEmailHandler(emailRepo)
+	accountHandler := handlers.NewAccountHandler(accountRepo)
 
 	api := router.Group("/api/v1")
 	{
@@ -74,6 +76,12 @@ func main() {
 		
 		api.GET("/emails/important", emailHandler.GetImportantEmails)
 		api.GET("/accounts/:accountId/emails", emailHandler.GetEmailsByAccount)
+		api.POST("/accounts", accountHandler.CreateAccount)
+		api.GET("/accounts", accountHandler.GetAccounts)
+		api.PUT("/accounts/:accountId", accountHandler.UpdateAccount)
+		api.DELETE("/accounts/:accountId", accountHandler.DeleteAccount)
+		api.POST("/accounts/test", accountHandler.TestConnection)
+		api.POST("/accounts/:accountId/test", accountHandler.TestExistingConnection)
 	}
 
 	srv := &http.Server{
