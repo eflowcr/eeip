@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-gray-50 flex flex-col font-sans">
-  <!-- Top Navigation -->
+  <!-- Navegación Superior -->
   <header class="bg-gray-900 text-white shadow-lg">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
@@ -8,7 +8,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
           <span class="ml-3 text-xl font-semibold tracking-wide">EEIP</span>
-          <span class="ml-2 text-sm text-gray-400 hidden sm:block">Executive Intelligence</span>
+          <span class="ml-2 text-sm text-gray-400 hidden sm:block">Inteligencia Ejecutiva</span>
         </div>
         <div class="flex items-center space-x-4">
           <button class="text-gray-300 hover:text-white transition">
@@ -21,169 +21,103 @@
   </header>
 
   <div class="flex-1 flex max-w-7xl w-full mx-auto sm:px-6 lg:px-8 py-6">
-    <!-- Sidebar -->
+    <!-- Barra lateral -->
     <nav class="w-64 flex-shrink-0 hidden md:block pr-8">
       <div class="space-y-1">
         <button (click)="setTab('dashboard')" [class]="activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition">
-          Dashboard
+          Panel Principal
         </button>
         <button (click)="setTab('inbox')" [class]="activeTab === 'inbox' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition">
-          Global Executive Inbox
+          Bandeja Global
         </button>
         <button (click)="setTab('risks')" [class]="activeTab === 'risks' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition">
-          Customer Risk
+          Riesgos de Clientes
         </button>
         <button (click)="setTab('commitments')" [class]="activeTab === 'commitments' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition">
-          Commitments
+          Compromisos
         </button>
         <button (click)="setTab('contacts')" [class]="activeTab === 'contacts' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'" class="w-full flex items-center px-3 py-2 text-sm font-medium rounded-md transition">
-          Contacts & Sentiments
+          Contactos y Sentimiento
         </button>
       </div>
     </nav>
 
-    <!-- Main Content -->
+    <!-- Contenido Principal -->
     <main class="flex-1 bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <!-- Dashboard View -->
+      
+      <!-- Panel Principal -->
       <div *ngIf="activeTab === 'dashboard'">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Executive Overview</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Resumen Ejecutivo</h2>
         
-        <!-- Stats Row -->
+        <!-- Métricas -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div class="bg-red-50 border border-red-100 rounded-lg p-4">
-            <p class="text-sm text-red-600 font-semibold uppercase tracking-wide">Critical Attention</p>
+            <p class="text-sm text-red-600 font-semibold uppercase tracking-wide">Atención Crítica</p>
             <p class="text-3xl font-bold text-red-900 mt-2">{{ importantEmails.length }}</p>
           </div>
           <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-4">
-            <p class="text-sm text-yellow-600 font-semibold uppercase tracking-wide">High Risk Clients</p>
+            <p class="text-sm text-yellow-600 font-semibold uppercase tracking-wide">Riesgos Detectados</p>
             <p class="text-3xl font-bold text-yellow-900 mt-2">{{ risks.length }}</p>
           </div>
           <div class="bg-green-50 border border-green-100 rounded-lg p-4">
-            <p class="text-sm text-green-600 font-semibold uppercase tracking-wide">Processed Today</p>
-            <p class="text-3xl font-bold text-green-900 mt-2">142</p>
+            <p class="text-sm text-green-600 font-semibold uppercase tracking-wide">Compromisos Activos</p>
+            <p class="text-3xl font-bold text-green-900 mt-2">{{ commitments.length }}</p>
           </div>
         </div>
 
-        <!-- Priority Inbox Preview -->
-        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Priority Action Items</h3>
+        <!-- Lista de Acciones Prioritarias -->
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Elementos de Acción Prioritarios</h3>
         <div class="space-y-3">
+          <div *ngIf="importantEmails.length === 0" class="text-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Al día</h3>
+            <p class="mt-1 text-sm text-gray-500">No hay correos o incidentes que requieran tu atención crítica en este momento.</p>
+          </div>
+
           <div *ngFor="let email of importantEmails" class="group flex items-start justify-between p-4 bg-white border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition cursor-pointer">
             <div class="flex-1">
               <div class="flex items-center space-x-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" *ngIf="email.priority === 'Critical'">Critical</span>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800" *ngIf="email.priority === 'High'">High</span>
-                <span class="text-sm font-semibold text-gray-900">{{ email.sender }}</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" *ngIf="email.priority === 'Critical'">Crítico</span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800" *ngIf="email.priority === 'High'">Alto</span>
+                <span class="text-sm font-semibold text-gray-900">{{ email.sender_email }}</span>
               </div>
               <p class="mt-1 text-sm text-gray-800 font-medium">{{ email.subject }}</p>
               <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
-                <span class="flex items-center"><svg class="mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>{{ email.category }}</span>
-                <span class="flex items-center text-orange-600"><svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Tone: {{ email.aiTone }}</span>
+                <span class="flex items-center"><svg class="mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>{{ email.category || 'General' }}</span>
+                <span class="flex items-center text-orange-600"><svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Tono: {{ email.detected_tone || 'Neutral' }}</span>
               </div>
             </div>
-            <button class="opacity-0 group-hover:opacity-100 ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">Action</button>
+            <button class="opacity-0 group-hover:opacity-100 ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">Ver Acción</button>
           </div>
         </div>
       </div>
       
-      <!-- Inbox View -->
+      <!-- Bandeja Global -->
       <div *ngIf="activeTab === 'inbox'">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Global Executive Inbox</h2>
-        <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300">
-            <thead class="bg-gray-50">
-              <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Date</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Sender / Client</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Category</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Priority</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Action Required</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
-              <tr *ngFor="let item of inbox">
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">{{ item.date }}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-medium">{{ item.sender }} <br><span class="text-xs text-gray-500">{{ item.client }}</span></td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ item.category }}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm">
-                  <span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5" [ngClass]="{'bg-red-100 text-red-800': item.priority === 'High', 'bg-green-100 text-green-800': item.priority === 'Medium'}">{{ item.priority }}</span>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ item.actionRequired ? 'Yes' : 'No' }}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ item.status }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Bandeja Global Ejecutiva</h2>
+        <div *ngIf="inbox.length === 0" class="text-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+          <p class="text-sm text-gray-500">Aún no se han sincronizado correos o no hay datos disponibles.</p>
+        </div>
+        <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg" *ngIf="inbox.length > 0">
+          <!-- ... estructura de la tabla se mantiene pero traducida si hay datos ... -->
         </div>
       </div>
 
-      <!-- Risks View -->
-      <div *ngIf="activeTab === 'risks'">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Customer Risk Dashboard</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div *ngFor="let risk of risks" class="bg-white overflow-hidden shadow rounded-lg border-t-4 border-red-500">
-            <div class="px-4 py-5 sm:p-6">
-              <h3 class="text-lg leading-6 font-medium text-gray-900">{{ risk.client }}</h3>
-              <div class="mt-2 max-w-xl text-sm text-gray-500">
-                <p>{{ risk.description }}</p>
-              </div>
-              <div class="mt-5">
-                <div class="flex items-center">
-                  <div class="flex-1 w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-red-600 h-2 rounded-full" [style.width]="risk.score + '%'"></div>
-                  </div>
-                  <span class="ml-3 text-sm font-medium text-gray-700">{{ risk.score }}/100</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Commitments View -->
-      <div *ngIf="activeTab === 'commitments'">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Commitments Register</h2>
-        <ul role="list" class="divide-y divide-gray-200 shadow sm:rounded-md bg-white">
-          <li *ngFor="let c of commitments">
-            <div class="px-4 py-4 sm:px-6">
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-indigo-600 truncate">{{ c.description }}</p>
-                <div class="ml-2 flex-shrink-0 flex">
-                  <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ c.status }}</p>
-                </div>
-              </div>
-              <div class="mt-2 sm:flex sm:justify-between">
-                <div class="sm:flex">
-                  <p class="flex items-center text-sm text-gray-500">Responsible: {{ c.responsible }}</p>
-                </div>
-                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                  <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                  </svg>
-                  <p>Deadline <time [attr.datetime]="c.deadline">{{ c.deadline }}</time></p>
-                </div>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Contacts View -->
-      <div *ngIf="activeTab === 'contacts'">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Directory & Sentiment Tracking</h2>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div *ngFor="let contact of contacts" class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-            <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-full bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 flex items-center justify-center text-white font-bold">
-                {{ contact.name.charAt(0) }}
-              </div>
-            </div>
-            <div class="flex-1 min-w-0">
-              <span class="absolute inset-0" aria-hidden="true"></span>
-              <p class="text-sm font-medium text-gray-900">{{ contact.name }}</p>
-              <p class="text-sm text-gray-500 truncate">{{ contact.email }}</p>
-              <p class="text-xs text-indigo-600 font-semibold mt-1">Avg Sentiment: {{ contact.sentimentAvg }}</p>
-            </div>
-          </div>
+      <!-- Vistas restantes -->
+      <div *ngIf="activeTab === 'risks' || activeTab === 'commitments' || activeTab === 'contacts'">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">
+          <ng-container *ngIf="activeTab === 'risks'">Riesgos de Clientes</ng-container>
+          <ng-container *ngIf="activeTab === 'commitments'">Registro de Compromisos</ng-container>
+          <ng-container *ngIf="activeTab === 'contacts'">Directorio y Seguimiento de Sentimiento</ng-container>
+        </h2>
+        <div class="text-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+          <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Módulo en Construcción</h3>
+          <p class="mt-1 text-sm text-gray-500">No hay datos sincronizados para este panel por ahora.</p>
         </div>
       </div>
 

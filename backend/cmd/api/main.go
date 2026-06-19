@@ -15,6 +15,7 @@ import (
 	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 	"github.com/eprac/eeip-backend/internal/interfaces/api/handlers"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -56,8 +57,7 @@ func main() {
 	}
 
 	router := gin.Default()
-
-	// CORS middleware could be added here
+	router.Use(cors.Default())
 	
 	// Repositories
 	sqlxDB := sqlx.NewDb(db, "postgres")
