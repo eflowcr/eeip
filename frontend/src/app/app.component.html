@@ -105,16 +105,32 @@
             </div>
           </div>
           
-          <!-- Filtros de Tono -->
-          <div>
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filtrar por Tono / Sentimiento:</h4>
-            <div class="flex flex-wrap gap-2">
-              <button *ngFor="let tone of availableTones" 
-                      (click)="toggleToneFilter(tone)"
-                      class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 transform active:scale-95"
-                      [ngClass]="selectedToneFilter === tone ? 'bg-indigo-500 text-white border-indigo-400 shadow-lg shadow-indigo-500/50' : 'bg-slate-800/50 text-slate-300 border-white/10 hover:bg-slate-700 hover:text-white'">
-                {{ tone }}
-              </button>
+          <!-- Filtros Dinámicos -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Filtros de Tono -->
+            <div *ngIf="activeTones.length > 0">
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filtrar por Sentimiento Detectado:</h4>
+              <div class="flex flex-wrap gap-2">
+                <button *ngFor="let tone of activeTones" 
+                        (click)="toggleToneFilter(tone)"
+                        class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 transform active:scale-95"
+                        [ngClass]="selectedToneFilter === tone ? 'bg-indigo-500 text-white border-indigo-400 shadow-lg shadow-indigo-500/50' : 'bg-slate-800/50 text-slate-300 border-white/10 hover:bg-slate-700 hover:text-white'">
+                  {{ tone }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Filtros de Prioridad -->
+            <div *ngIf="activePriorities.length > 0">
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filtrar por Criticidad:</h4>
+              <div class="flex flex-wrap gap-2">
+                <button *ngFor="let priority of activePriorities" 
+                        (click)="togglePriorityFilter(priority)"
+                        class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 transform active:scale-95"
+                        [ngClass]="selectedPriorityFilter === priority ? 'bg-fuchsia-600 text-white border-fuchsia-400 shadow-lg shadow-fuchsia-500/50' : 'bg-slate-800/50 text-slate-300 border-white/10 hover:bg-slate-700 hover:text-white'">
+                  {{ priority }}
+                </button>
+              </div>
             </div>
           </div>
         </div>

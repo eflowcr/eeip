@@ -38,25 +38,52 @@ export class AppComponent implements OnInit {
     });
   }
 
-  get filteredPendingEmails() { return this.filterByTone(this.filterEmails(this.pendingEmails)); }
-  get filteredAuditingEmails() { return this.filterByTone(this.filterEmails(this.auditingEmails)); }
-  get filteredClosedEmails() { return this.filterByTone(this.filterEmails(this.closedEmails)); }
+  get filteredPendingEmails() { return this.filterForDashboard(this.filterEmails(this.pendingEmails)); }
+  get filteredAuditingEmails() { return this.filterForDashboard(this.filterEmails(this.auditingEmails)); }
+  get filteredClosedEmails() { return this.filterForDashboard(this.filterEmails(this.closedEmails)); }
   
   // Tones for filtering
-  availableTones = ['Optimista', 'Confrontativo', 'Agresivo/violento', 'Amenazante', 'Neutral', 'Profesional', 'Frustrado', 'Formal', 'Comercial', 'Oportunidad de negocios'];
-  selectedToneFilter: string | null = null;
-
-  toggleToneFilter(tone: string) {
-    if (this.selectedToneFilter === tone) {
-      this.selectedToneFilter = null; // deactivate filter
-    } else {
-      this.selectedToneFilter = tone;
-    }
+  get activeTones(): string[] {
+    const tones = new Set<string>();
+    this.importantEmails.forEach(e => {
+      if (e.detected_tone) tones.add(e.detected_tone);
+    });
+    return Array.from(tones);
   }
 
-  filterByTone(emails: any[]) {
-    if (!this.selectedToneFilter) return emails;
-    return emails.filter(e => e.detected_tone?.toLowerCase() === this.selectedToneFilter?.toLowerCase());
+  // Priorities for filtering
+  get activePriorities(): string[] {
+    const priorities = new Set<string>();
+    this.importantEmails.forEach(e => {
+      if (e.priority) priorities.add(e.priority);
+    });
+    return Array.from(priorities);
+  }
+
+  selectedToneFilter: string | null = null;
+  selectedPriorityFilter: string | null = null;
+
+  toggleToneFilter(tone: string) {
+    this.selectedToneFilter = this.selectedToneFilter === tone ? null : tone;
+  }
+
+  togglePriorityFilter(priority: string) {
+    this.selectedPriorityFilter = this.selectedPriorityFilter === priority ? null : priority;
+  }
+
+  filterForDashboard(emails: any[]) {
+    return emails.filter(e => {
+      let matchTone = true;
+      let matchPriority = true;
+      
+      if (this.selectedToneFilter) {
+        matchTone = e.detected_tone?.toLowerCase() === this.selectedToneFilter.toLowerCase();
+      }
+      if (this.selectedPriorityFilter) {
+        matchPriority = e.priority?.toLowerCase() === this.selectedPriorityFilter.toLowerCase();
+      }
+      return matchTone && matchPriority;
+    });
   }
   
   inbox: any[] = [];
