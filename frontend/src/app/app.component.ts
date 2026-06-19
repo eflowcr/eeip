@@ -77,6 +77,10 @@ export class AppComponent implements OnInit {
     });
   }
 
+  getCriticalCount(): number {
+    return this.importantEmails.filter(e => e.priority === 'Critical').length;
+  }
+
   loadInbox() {
     this.http.get<any[]>(`${this.apiUrl}/emails/all?limit=50`).subscribe({
       next: (data) => {
