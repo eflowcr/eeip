@@ -57,9 +57,12 @@ Please classify it according to the EEIP platform rules and provide a JSON respo
 - recommended_action (string)
 - classification_explanation (string)
 
-CRITICAL RULES:
-1. If the email is a newsletter, promotional, automated marketing, vendor spam, or general news (like from connectab2b.com), you MUST classify it as category="Ruido" and priority="Low", and requires_action=false.
-2. Only mark requires_action=true if a human executive literally needs to reply or make a decision today.
+CRITICAL RULES & BUSINESS CONTEXT:
+1. You are auditing employee inboxes on behalf of the company's executive. Your primary goal is to find "dropped balls", angry customers, and neglected sales opportunities (e.g., software licenses, proposals).
+2. If the email contains a complaint, frustration, or a customer who is upset, set priority="Critical" and sentiment to an appropriate negative value.
+3. If the email is a clear sales opportunity, contract, or license request, set priority="High" and category="Comercial".
+4. If the email is a newsletter, promotional, automated marketing, vendor spam, or general news (like from connectab2b.com), you MUST classify it as category="Ruido" and priority="Low", and requires_action=false.
+5. Only mark requires_action=true if the executive needs to intervene or if the employee is neglecting an important issue.
 
 Return ONLY valid JSON.`, email.SenderEmail, *email.Subject, *email.BodyText)
 
