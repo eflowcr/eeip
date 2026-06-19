@@ -57,6 +57,10 @@ Please classify it according to the EEIP platform rules and provide a JSON respo
 - recommended_action (string)
 - classification_explanation (string)
 
+CRITICAL RULES:
+1. If the email is a newsletter, promotional, automated marketing, vendor spam, or general news (like from connectab2b.com), you MUST classify it as category="Ruido" and priority="Low", and requires_action=false.
+2. Only mark requires_action=true if a human executive literally needs to reply or make a decision today.
+
 Return ONLY valid JSON.`, email.SenderEmail, *email.Subject, *email.BodyText)
 
 	resp, err := s.client.CreateChatCompletion(

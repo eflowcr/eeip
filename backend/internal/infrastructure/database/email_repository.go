@@ -63,7 +63,7 @@ func (r *emailRepository) GetEmailsByAccount(ctx context.Context, accountID stri
 
 func (r *emailRepository) GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error) {
 	var emails []models.Email
-	query := `SELECT * FROM emails WHERE priority IN ('Critical', 'High') OR requires_action = true ORDER BY received_at DESC LIMIT $1`
+	query := `SELECT * FROM emails WHERE (priority IN ('Critical', 'High') OR requires_action = true) AND category NOT IN ('Ruido', 'Informativo') ORDER BY received_at DESC LIMIT $1`
 	err := r.db.SelectContext(ctx, &emails, query, limit)
 	return emails, err
 }
