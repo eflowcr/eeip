@@ -97,10 +97,16 @@
               </div>
               <div *ngFor="let email of filteredPendingEmails" (click)="toggleExpand(email)" class="bg-white p-3 rounded shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition relative group">
                 <div class="flex justify-between items-start mb-2">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" 
-                        [ngClass]="email.priority === 'Critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'">
-                    {{ email.priority === 'Critical' ? 'CRÍTICO' : 'ALTO' }}
-                  </span>
+                  <div class="flex space-x-1">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" 
+                          [ngClass]="email.priority === 'Critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'">
+                      {{ email.priority === 'Critical' ? 'CRÍTICO' : 'ALTO' }}
+                    </span>
+                    <span *ngIf="email.is_replied" title="Ya fue respondido" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800">
+                      <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                      RESPONDIDO
+                    </span>
+                  </div>
                   <span class="text-xs text-gray-400">{{ email.received_at | date:'MMM d' }}</span>
                 </div>
                 <h4 class="text-sm font-medium text-gray-900 mb-1 leading-tight">{{ email.subject }}</h4>
@@ -156,10 +162,16 @@
               </div>
               <div *ngFor="let email of filteredAuditingEmails" (click)="toggleExpand(email)" class="bg-white p-3 rounded shadow-sm border border-blue-200 cursor-pointer hover:shadow-md transition relative group">
                 <div class="flex justify-between items-start mb-2">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" 
-                        [ngClass]="email.priority === 'Critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'">
-                    {{ email.priority === 'Critical' ? 'CRÍTICO' : 'ALTO' }}
-                  </span>
+                  <div class="flex space-x-1">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" 
+                          [ngClass]="email.priority === 'Critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'">
+                      {{ email.priority === 'Critical' ? 'CRÍTICO' : 'ALTO' }}
+                    </span>
+                    <span *ngIf="email.is_replied" title="Ya fue respondido" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800">
+                      <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                      RESPONDIDO
+                    </span>
+                  </div>
                   <span class="text-xs text-gray-400">{{ email.received_at | date:'MMM d' }}</span>
                 </div>
                 <h4 class="text-sm font-medium text-gray-900 mb-1 leading-tight">{{ email.subject }}</h4>

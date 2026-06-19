@@ -32,14 +32,14 @@ func (r *emailRepository) SaveEmail(ctx context.Context, email *models.Email) er
 			category, priority, requires_action, requires_approval, is_delegable, deadline,
 			sentiment, sentiment_score, dissatisfaction_score, escalation_risk_score,
 			customer_risk_score, detected_tone, recommended_action, ai_confidence_score,
-			classification_explanation, status, suggested_assignee
+			classification_explanation, status, suggested_assignee, is_replied
 		) VALUES (
 			:account_id, :message_id, :thread_id, :sender_email, :sender_name,
 			:recipient_emails, :subject, :body_text, :body_html, :received_at,
 			:category, :priority, :requires_action, :requires_approval, :is_delegable, :deadline,
 			:sentiment, :sentiment_score, :dissatisfaction_score, :escalation_risk_score,
 			:customer_risk_score, :detected_tone, :recommended_action, :ai_confidence_score,
-			:classification_explanation, :status, :suggested_assignee
+			:classification_explanation, :status, :suggested_assignee, :is_replied
 		) RETURNING id, created_at, updated_at
 	`
 	

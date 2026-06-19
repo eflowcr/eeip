@@ -77,7 +77,7 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 
 	var section imap.BodySectionName
 	go func() {
-		done <- c.Fetch(seqset, []imap.FetchItem{section.FetchItem()}, messages)
+		done <- c.Fetch(seqset, []imap.FetchItem{section.FetchItem(), imap.FetchFlags}, messages)
 	}()
 
 	for msg := range messages {
@@ -137,6 +137,14 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 			}
 		}
 
+		isReplied := false
+		for _, flag := range msg.Flags {
+			if flag == imap.AnsweredFlag {
+				isReplied = true
+				break
+			}
+		}
+
 		email := &models.Email{
 			AccountID:       account.ID,
 			MessageID:       msgID,
@@ -144,6 +152,7 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 			SenderName:      &senderName,
 			RecipientEmails: recipientsJSON,
 			Subject:         &subject,
+			IsReplied:       isReplied,
 			BodyText:        &bodyText,
 			ReceivedAt:      date,
 			Status:          "Unread",
