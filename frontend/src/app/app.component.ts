@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -19,13 +20,21 @@ export class AppComponent implements OnInit {
   activeTab = 'dashboard';
 
   private http = inject(HttpClient);
-  // Using localhost:10000 for local testing, in prod it should be an env variable or relative path
   private apiUrl = 'http://localhost:10000/api/v1';
+
+  // Configuración de cuenta
+  newAccount = {
+    email_address: '',
+    imap_host: '',
+    imap_port: 993,
+    imap_user: '',
+    imap_password: ''
+  };
+  isSavingAccount = false;
+  accountSuccessMessage = '';
 
   ngOnInit() {
     this.loadImportantEmails();
-    // The following arrays are initialized empty. 
-    // They will be hydrated once the respective backend endpoints are implemented.
     this.inbox = [];
     this.risks = [];
     this.commitments = [];
@@ -47,5 +56,21 @@ export class AppComponent implements OnInit {
 
   setTab(tab: string) {
     this.activeTab = tab;
+  }
+
+  saveAccount() {
+    this.isSavingAccount = true;
+    this.accountSuccessMessage = '';
+    this.http.post(`${this.apiUrl}/accounts`, this.newAccount).subscribe({
+      next: (res) => {
+        this.isSavingAccount = false;
+        this.accountSuccessMessage = '¡Cuenta configurada y guardada exitosamente!';
+        this.newAccount = { email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '' };
+      },
+      error: (err) => {
+        this.isSavingAccount = false;
+        alert('Error al guardar la cuenta. Revisa la conexión con el servidor.');
+      }
+    });
   }
 }
