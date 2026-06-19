@@ -16,6 +16,7 @@ import (
 	"github.com/eprac/eeip-backend/internal/interfaces/api/handlers"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -59,7 +60,8 @@ func main() {
 	// CORS middleware could be added here
 	
 	// Repositories
-	emailRepo := database.NewEmailRepository(db)
+	sqlxDB := sqlx.NewDb(db, "postgres")
+	emailRepo := database.NewEmailRepository(sqlxDB)
 
 	// Handlers
 	emailHandler := handlers.NewEmailHandler(emailRepo)
@@ -101,7 +103,7 @@ func main() {
 	log.Println("Server exiting")
 }
 
-func runMigrations(db *sql.OpenDB) {
+func runMigrations(db *sql.DB) {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		log.Fatalf("Failed to create migration driver: %v", err)
