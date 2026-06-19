@@ -73,10 +73,18 @@ export class AppComponent implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/emails/important?limit=50`).subscribe({
       next: (data) => {
         if (data) {
+          const today = new Date();
+          const isToday = (dateString: string) => {
+            const date = new Date(dateString);
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+          };
+
           this.importantEmails = data;
           this.pendingEmails = data.filter(e => e.status === 'Unread' || e.status === 'Read' || !e.status);
           this.auditingEmails = data.filter(e => e.status === 'Auditing');
-          this.closedEmails = data.filter(e => e.status === 'Actioned');
+          this.closedEmails = data.filter(e => e.status === 'Actioned' && isToday(e.updated_at));
         }
       },
       error: (err) => {
