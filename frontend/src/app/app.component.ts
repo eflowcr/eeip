@@ -160,11 +160,13 @@ export class AppComponent implements OnInit {
       next: (res) => {
         email.summary = res.summary;
         this.loadingSummaryId = null;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error generating summary', err);
         email.summary = 'No se pudo generar el resumen en este momento.';
         this.loadingSummaryId = null;
+        this.cdr.detectChanges();
       }
     });
   }
