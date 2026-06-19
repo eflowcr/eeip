@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  api:
+    image: ${DOCKER_USERNAME}/eeip-backend:latest
+    container_name: eeip-backend-prod
+    ports:
+      - "10000:10000"
+    environment:
+      # Use the server's LAN IP or Docker gateway (e.g. 172.17.0.1) to reach the host PostgreSQL
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT:-5432}
+      - DATABASE_USER=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_NAME=${POSTGRES_DB}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    restart: always
+
+  web:
+    image: ${DOCKER_USERNAME}/eeip-frontend:latest
+    container_name: eeip-frontend-prod
+    ports:
+      - "11000:80"
+    restart: always
