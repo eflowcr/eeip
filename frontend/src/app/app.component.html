@@ -209,18 +209,28 @@
                 </div>
 
                 <ul role="list" class="divide-y divide-gray-200" *ngIf="accounts.length > 0">
-                  <li *ngFor="let acc of accounts" class="py-4 flex flex-col sm:flex-row sm:items-center justify-between">
-                    <div class="flex flex-col mb-2 sm:mb-0">
-                      <p class="text-sm font-medium text-gray-900">{{ acc.email_address }}</p>
-                      <p class="text-sm text-gray-500">IMAP: {{ acc.imap_host }}</p>
+                  <li *ngFor="let acc of accounts" class="py-4 flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                      <div class="flex flex-col mb-2 sm:mb-0">
+                        <p class="text-sm font-medium text-gray-900">{{ acc.email_address }}</p>
+                        <p class="text-sm text-gray-500">IMAP: {{ acc.imap_host }}</p>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" *ngIf="acc.is_active">
+                          Activa
+                        </span>
+                        <button (click)="testExistingAccount(acc.id)" [disabled]="accountTestStatus[acc.id]?.loading" class="text-gray-600 hover:text-gray-900 text-sm font-medium border border-gray-300 rounded px-2 py-1 bg-white disabled:opacity-50">
+                          <span *ngIf="!accountTestStatus[acc.id]?.loading">Probar</span>
+                          <span *ngIf="accountTestStatus[acc.id]?.loading">Probando...</span>
+                        </button>
+                        <button (click)="editAccount(acc)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium ml-2">Editar</button>
+                        <button (click)="deleteAccount(acc.id)" class="text-red-600 hover:text-red-900 text-sm font-medium ml-2">Borrar</button>
+                      </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" *ngIf="acc.is_active">
-                        Activa
-                      </span>
-                      <button (click)="testExistingAccount(acc.id)" class="text-gray-600 hover:text-gray-900 text-sm font-medium border border-gray-300 rounded px-2 py-1 bg-white">Probar</button>
-                      <button (click)="editAccount(acc)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium ml-2">Editar</button>
-                      <button (click)="deleteAccount(acc.id)" class="text-red-600 hover:text-red-900 text-sm font-medium ml-2">Borrar</button>
+                    
+                    <!-- Inline status message -->
+                    <div *ngIf="accountTestStatus[acc.id]?.message" class="mt-2 text-sm" [ngClass]="accountTestStatus[acc.id].error ? 'text-red-600' : 'text-green-600'">
+                      {{ accountTestStatus[acc.id].message }}
                     </div>
                   </li>
                 </ul>

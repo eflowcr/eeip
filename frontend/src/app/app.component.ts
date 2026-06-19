@@ -37,6 +37,9 @@ export class AppComponent implements OnInit {
   accountSuccessMessage = '';
   accountErrorMessage = '';
   editingAccountId: string | null = null;
+  
+  // Para pruebas en línea en la lista
+  accountTestStatus: { [id: string]: { loading: boolean, message: string, error: boolean } } = {};
 
   ngOnInit() {
     this.loadImportantEmails();
@@ -156,20 +159,24 @@ export class AppComponent implements OnInit {
   }
 
   testExistingAccount(accountId: string) {
-    this.isTestingConnection = true;
-    this.accountSuccessMessage = '';
-    this.accountErrorMessage = '';
+    this.accountTestStatus[accountId] = { loading: true, message: 'Probando...', error: false };
+    this.cdr.detectChanges();
 
     this.http.post(`${this.apiUrl}/accounts/${accountId}/test`, {}).subscribe({
       next: () => {
-        this.isTestingConnection = false;
-        this.accountSuccessMessage = '¡Conexión IMAP exitosa! Las credenciales guardadas son válidas.';
+        this.accountTestStatus[accountId] = { loading: false, message: '¡Conexión exitosa!', error: false };
         this.cdr.detectChanges();
+        // Clear message after 3 seconds
+        setTimeout(() => {
+          if (this.accountTestStatus[accountId]) {
+            this.accountTestStatus[accountId].message = '';
+            this.cdr.detectChanges();
+          }
+        }, 3000);
       },
       error: (err) => {
-        this.isTestingConnection = false;
-        const msg = err.error?.details || 'Credenciales inválidas o servidor inalcanzable.';
-        this.accountErrorMessage = `Error IMAP al probar cuenta guardada: ${msg}`;
+        const msg = err.error?.details || 'Error de conexión';
+        this.accountTestStatus[accountId] = { loading: false, message: `Error: ${msg}`, error: true };
         this.cdr.detectChanges();
       }
     });
