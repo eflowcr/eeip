@@ -86,6 +86,7 @@ export class AppComponent implements OnInit {
       next: (data) => {
         if (data) {
           this.accounts = data;
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {
@@ -110,6 +111,7 @@ export class AppComponent implements OnInit {
           this.pendingEmails = data.filter(e => e.status === 'Unread' || e.status === 'Read' || !e.status);
           this.auditingEmails = data.filter(e => e.status === 'Auditing');
           this.closedEmails = data.filter(e => e.status === 'Actioned' && isToday(e.updated_at));
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {
