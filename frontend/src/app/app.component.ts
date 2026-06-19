@@ -16,6 +16,31 @@ export class AppComponent implements OnInit {
   pendingEmails: any[] = [];
   auditingEmails: any[] = [];
   closedEmails: any[] = [];
+
+  // Filters
+  searchQuery: string = '';
+  selectedAccountFilter: string = '';
+
+  get uniqueMonitoredAccounts() {
+    const accounts = this.importantEmails.map(e => e.monitored_account);
+    return [...new Set(accounts)].filter(Boolean);
+  }
+
+  filterEmails(emails: any[]) {
+    return emails.filter(e => {
+      const q = this.searchQuery.toLowerCase();
+      const matchSearch = q === '' || 
+        (e.sender_email && e.sender_email.toLowerCase().includes(q)) || 
+        (e.subject && e.subject.toLowerCase().includes(q));
+      const matchAccount = this.selectedAccountFilter === '' || 
+        e.monitored_account === this.selectedAccountFilter;
+      return matchSearch && matchAccount;
+    });
+  }
+
+  get filteredPendingEmails() { return this.filterEmails(this.pendingEmails); }
+  get filteredAuditingEmails() { return this.filterEmails(this.auditingEmails); }
+  get filteredClosedEmails() { return this.filterEmails(this.closedEmails); }
   
   inbox: any[] = [];
   risks: any[] = [];
