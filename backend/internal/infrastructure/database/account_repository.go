@@ -9,6 +9,8 @@ import (
 type AccountRepository interface {
 	CreateAccount(ctx context.Context, account *models.EmailAccount) error
 	GetAccounts(ctx context.Context) ([]models.EmailAccount, error)
+	UpdateAccount(ctx context.Context, account *models.EmailAccount) error
+	DeleteAccount(ctx context.Context, id string) error
 }
 
 type accountRepository struct {
@@ -44,4 +46,25 @@ func (r *accountRepository) GetAccounts(ctx context.Context) ([]models.EmailAcco
 	query := `SELECT * FROM email_accounts ORDER BY created_at DESC`
 	err := r.db.SelectContext(ctx, &accounts, query)
 	return accounts, err
+}
+
+func (r *accountRepository) UpdateAccount(ctx context.Context, account *models.EmailAccount) error {
+	query := `
+		UPDATE email_accounts SET
+			email_address = :email_address,
+			imap_host = :imap_host,
+			imap_port = :imap_port,
+			imap_user = :imap_user,
+			imap_password = CASE WHEN :imap_password != '' THEN :imap_password ELSE imap_password END,
+			updated_at = NOW()
+		WHERE id = :id
+	`
+	_, err := r.db.NamedExecContext(ctx, query, account)
+	return err
+}
+
+func (r *accountRepository) DeleteAccount(ctx context.Context, id string) error {
+	query := `DELETE FROM email_accounts WHERE id = $1`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
 }

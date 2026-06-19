@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/emersion/go-imap/client"
 	"github.com/eprac/eeip-backend/internal/domain/models"
 	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 	"github.com/gin-gonic/gin"
@@ -41,4 +43,58 @@ func (h *AccountHandler) GetAccounts(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, accounts)
+}
+
+func (h *AccountHandler) UpdateAccount(c *gin.Context) {
+	accountId := c.Param("accountId")
+	var req models.EmailAccount
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	req.ID = accountId
+
+	if err := h.repo.UpdateAccount(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update account", "details": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Account updated successfully"})
+}
+
+func (h *AccountHandler) DeleteAccount(c *gin.Context) {
+	accountId := c.Param("accountId")
+	if err := h.repo.DeleteAccount(c.Request.Context(), accountId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete account", "details": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Account deleted successfully"})
+}
+
+func (h *AccountHandler) TestConnection(c *gin.Context) {
+	var req models.EmailAccount
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var cIMAP *client.Client
+	var err error
+	if req.IMAPPort == 993 {
+		cIMAP, err = client.DialTLS(fmt.Sprintf("%s:%d", req.IMAPHost, req.IMAPPort), nil)
+	} else {
+		cIMAP, err = client.Dial(fmt.Sprintf("%s:%d", req.IMAPHost, req.IMAPPort))
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to connect to IMAP server", "details": err.Error()})
+		return
+	}
+	defer cIMAP.Logout()
+
+	if err := cIMAP.Login(req.IMAPUser, req.IMAPPassword); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to login to IMAP server", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Connection successful"})
 }
