@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eprac/eeip-backend/internal/application/services"
 	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 	"github.com/eprac/eeip-backend/internal/interfaces/api/handlers"
 
@@ -64,9 +65,19 @@ func main() {
 	emailRepo := database.NewEmailRepository(sqlxDB)
 	accountRepo := database.NewAccountRepository(sqlxDB)
 
+	// Services
+	openAIKey := getEnv("OPENAI_API_KEY", "mock-key")
+	var aiEngine services.AIClassificationEngine
+	if openAIKey == "mock-key" {
+		aiEngine = services.NewMockAIEngine()
+	} else {
+		aiEngine = services.NewAIClassificationEngine(openAIKey)
+	}
+	emailCollector := services.NewEmailCollector(emailRepo, aiEngine)
+
 	// Handlers
 	emailHandler := handlers.NewEmailHandler(emailRepo)
-	accountHandler := handlers.NewAccountHandler(accountRepo)
+	accountHandler := handlers.NewAccountHandler(accountRepo, emailCollector)
 
 	api := router.Group("/api/v1")
 	{
@@ -82,6 +93,7 @@ func main() {
 		api.DELETE("/accounts/:accountId", accountHandler.DeleteAccount)
 		api.POST("/accounts/test", accountHandler.TestConnection)
 		api.POST("/accounts/:accountId/test", accountHandler.TestExistingConnection)
+		api.POST("/accounts/:accountId/sync", accountHandler.SyncAccount)
 	}
 
 	srv := &http.Server{

@@ -40,6 +40,7 @@ export class AppComponent implements OnInit {
   
   // Para pruebas en línea en la lista
   accountTestStatus: { [id: string]: { loading: boolean, message: string, error: boolean } } = {};
+  accountSyncStatus: { [id: string]: { loading: boolean, message: string, error: boolean } } = {};
 
   ngOnInit() {
     this.loadImportantEmails();
@@ -177,6 +178,29 @@ export class AppComponent implements OnInit {
       error: (err) => {
         const msg = err.error?.details || 'Error de conexión';
         this.accountTestStatus[accountId] = { loading: false, message: `Error: ${msg}`, error: true };
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  syncAccount(accountId: string) {
+    this.accountSyncStatus[accountId] = { loading: true, message: 'Sincronizando...', error: false };
+    this.cdr.detectChanges();
+
+    this.http.post(`${this.apiUrl}/accounts/${accountId}/sync`, {}).subscribe({
+      next: () => {
+        this.accountSyncStatus[accountId] = { loading: false, message: '¡Sincronización completada!', error: false };
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          if (this.accountSyncStatus[accountId]) {
+            this.accountSyncStatus[accountId].message = '';
+            this.cdr.detectChanges();
+          }
+        }, 3000);
+      },
+      error: (err) => {
+        const msg = err.error?.details || 'Error de sincronización';
+        this.accountSyncStatus[accountId] = { loading: false, message: `Error: ${msg}`, error: true };
         this.cdr.detectChanges();
       }
     });

@@ -6,17 +6,19 @@ import (
 	"net/http"
 
 	"github.com/emersion/go-imap/client"
+	"github.com/eprac/eeip-backend/internal/application/services"
 	"github.com/eprac/eeip-backend/internal/domain/models"
 	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 	"github.com/gin-gonic/gin"
 )
 
 type AccountHandler struct {
-	repo database.AccountRepository
+	repo      database.AccountRepository
+	collector services.EmailCollector
 }
 
-func NewAccountHandler(repo database.AccountRepository) *AccountHandler {
-	return &AccountHandler{repo: repo}
+func NewAccountHandler(repo database.AccountRepository, collector services.EmailCollector) *AccountHandler {
+	return &AccountHandler{repo: repo, collector: collector}
 }
 
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
@@ -135,4 +137,22 @@ func (h *AccountHandler) TestExistingConnection(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Connection successful"})
+}
+
+func (h *AccountHandler) SyncAccount(c *gin.Context) {
+	accountId := c.Param("accountId")
+	
+	acc, err := h.repo.GetAccountByID(c.Request.Context(), accountId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
+		return
+	}
+
+	// For demonstration, we run synchronously to give immediate feedback.
+	if err := h.collector.CollectEmails(c.Request.Context(), acc); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Sync failed", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Account synchronized successfully"})
 }
