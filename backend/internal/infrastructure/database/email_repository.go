@@ -40,7 +40,10 @@ func (r *emailRepository) SaveEmail(ctx context.Context, email *models.Email) er
 			:sentiment, :sentiment_score, :dissatisfaction_score, :escalation_risk_score,
 			:customer_risk_score, :detected_tone, :recommended_action, :ai_confidence_score,
 			:classification_explanation, :status, :suggested_assignee, :is_replied
-		) RETURNING id, created_at, updated_at
+		) 
+		ON CONFLICT (account_id, sender_email, subject, received_at) 
+		DO UPDATE SET is_replied = EXCLUDED.is_replied, updated_at = NOW()
+		RETURNING id, created_at, updated_at
 	`
 	
 	rows, err := r.db.NamedQueryContext(ctx, query, email)
