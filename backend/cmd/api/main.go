@@ -81,6 +81,7 @@ func main() {
 		api.PUT("/accounts/:accountId", accountHandler.UpdateAccount)
 		api.DELETE("/accounts/:accountId", accountHandler.DeleteAccount)
 		api.POST("/accounts/test", accountHandler.TestConnection)
+		api.POST("/accounts/:accountId/test", accountHandler.TestExistingConnection)
 	}
 
 	srv := &http.Server{

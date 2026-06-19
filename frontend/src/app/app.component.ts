@@ -154,4 +154,24 @@ export class AppComponent implements OnInit {
       }
     });
   }
+
+  testExistingAccount(accountId: string) {
+    this.isTestingConnection = true;
+    this.accountSuccessMessage = '';
+    this.accountErrorMessage = '';
+
+    this.http.post(`${this.apiUrl}/accounts/${accountId}/test`, {}).subscribe({
+      next: () => {
+        this.isTestingConnection = false;
+        this.accountSuccessMessage = '¡Conexión IMAP exitosa! Las credenciales guardadas son válidas.';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isTestingConnection = false;
+        const msg = err.error?.details || 'Credenciales inválidas o servidor inalcanzable.';
+        this.accountErrorMessage = `Error IMAP al probar cuenta guardada: ${msg}`;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 }

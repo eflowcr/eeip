@@ -105,3 +105,34 @@ func (h *AccountHandler) TestConnection(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Connection successful"})
 }
+
+func (h *AccountHandler) TestExistingConnection(c *gin.Context) {
+	accountId := c.Param("accountId")
+	
+	acc, err := h.repo.GetAccountByID(c.Request.Context(), accountId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Account not found", "details": err.Error()})
+		return
+	}
+
+	var cIMAP *client.Client
+	if acc.IMAPPort == 993 {
+		tlsConfig := &tls.Config{InsecureSkipVerify: true}
+		cIMAP, err = client.DialTLS(fmt.Sprintf("%s:%d", acc.IMAPHost, acc.IMAPPort), tlsConfig)
+	} else {
+		cIMAP, err = client.Dial(fmt.Sprintf("%s:%d", acc.IMAPHost, acc.IMAPPort))
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to connect to IMAP server", "details": err.Error()})
+		return
+	}
+	defer cIMAP.Logout()
+
+	if err := cIMAP.Login(acc.IMAPUser, acc.IMAPPassword); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to login to IMAP server", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Connection successful"})
+}

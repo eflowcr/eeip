@@ -218,8 +218,9 @@
                       <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" *ngIf="acc.is_active">
                         Activa
                       </span>
-                      <button (click)="editAccount(acc)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Editar</button>
-                      <button (click)="deleteAccount(acc.id)" class="text-red-600 hover:text-red-900 text-sm font-medium">Borrar</button>
+                      <button (click)="testExistingAccount(acc.id)" class="text-gray-600 hover:text-gray-900 text-sm font-medium border border-gray-300 rounded px-2 py-1 bg-white">Probar</button>
+                      <button (click)="editAccount(acc)" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium ml-2">Editar</button>
+                      <button (click)="deleteAccount(acc.id)" class="text-red-600 hover:text-red-900 text-sm font-medium ml-2">Borrar</button>
                     </div>
                   </li>
                 </ul>

@@ -9,6 +9,7 @@ import (
 type AccountRepository interface {
 	CreateAccount(ctx context.Context, account *models.EmailAccount) error
 	GetAccounts(ctx context.Context) ([]models.EmailAccount, error)
+	GetAccountByID(ctx context.Context, id string) (*models.EmailAccount, error)
 	UpdateAccount(ctx context.Context, account *models.EmailAccount) error
 	DeleteAccount(ctx context.Context, id string) error
 }
@@ -46,6 +47,16 @@ func (r *accountRepository) GetAccounts(ctx context.Context) ([]models.EmailAcco
 	query := `SELECT * FROM email_accounts ORDER BY created_at DESC`
 	err := r.db.SelectContext(ctx, &accounts, query)
 	return accounts, err
+}
+
+func (r *accountRepository) GetAccountByID(ctx context.Context, id string) (*models.EmailAccount, error) {
+	var account models.EmailAccount
+	query := `SELECT * FROM email_accounts WHERE id = $1`
+	err := r.db.GetContext(ctx, &account, query, id)
+	if err != nil {
+		return nil, err
+	}
+	return &account, nil
 }
 
 func (r *accountRepository) UpdateAccount(ctx context.Context, account *models.EmailAccount) error {
