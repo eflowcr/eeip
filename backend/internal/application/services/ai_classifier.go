@@ -53,7 +53,7 @@ Please classify it according to the EEIP platform rules and provide a JSON respo
 - dissatisfaction_score (0-100)
 - escalation_risk_score (0-100)
 - customer_risk_score (0-100)
-- detected_tone (string)
+- detected_tone (MUST be exactly one of: Optimista, Confrontativo, Agresivo/violento, Amenazante, Neutral, Profesional, Frustrado, Formal, Comercial, Oportunidad de negocios)
 - recommended_action (string)
 - classification_explanation (string)
 

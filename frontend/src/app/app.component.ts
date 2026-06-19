@@ -38,9 +38,26 @@ export class AppComponent implements OnInit {
     });
   }
 
-  get filteredPendingEmails() { return this.filterEmails(this.pendingEmails); }
-  get filteredAuditingEmails() { return this.filterEmails(this.auditingEmails); }
-  get filteredClosedEmails() { return this.filterEmails(this.closedEmails); }
+  get filteredPendingEmails() { return this.filterByTone(this.filterEmails(this.pendingEmails)); }
+  get filteredAuditingEmails() { return this.filterByTone(this.filterEmails(this.auditingEmails)); }
+  get filteredClosedEmails() { return this.filterByTone(this.filterEmails(this.closedEmails)); }
+  
+  // Tones for filtering
+  availableTones = ['Optimista', 'Confrontativo', 'Agresivo/violento', 'Amenazante', 'Neutral', 'Profesional', 'Frustrado', 'Formal', 'Comercial', 'Oportunidad de negocios'];
+  selectedToneFilter: string | null = null;
+
+  toggleToneFilter(tone: string) {
+    if (this.selectedToneFilter === tone) {
+      this.selectedToneFilter = null; // deactivate filter
+    } else {
+      this.selectedToneFilter = tone;
+    }
+  }
+
+  filterByTone(emails: any[]) {
+    if (!this.selectedToneFilter) return emails;
+    return emails.filter(e => e.detected_tone?.toLowerCase() === this.selectedToneFilter?.toLowerCase());
+  }
   
   inbox: any[] = [];
   risks: any[] = [];
@@ -154,7 +171,8 @@ export class AppComponent implements OnInit {
 
   isCritical(email: any): boolean {
     const isCriticalPriority = email.priority === 'Critical' || email.priority === 'Urgent';
-    const isNegativeTone = email.detected_tone === 'Angry' || email.detected_tone === 'Frustrated' || email.detected_tone === 'Molesto';
+    const t = email.detected_tone;
+    const isNegativeTone = t === 'Agresivo/violento' || t === 'Amenazante' || t === 'Confrontativo' || t === 'Frustrado' || t === 'Angry' || t === 'Molesto';
     return isCriticalPriority || isNegativeTone;
   }
 
