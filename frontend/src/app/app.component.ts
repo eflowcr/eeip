@@ -79,6 +79,9 @@ export class AppComponent implements OnInit {
 
   setTab(tab: string) {
     this.activeTab = tab;
+    if (tab === 'dashboard' || tab === 'inbox') {
+      this.loadImportantEmails();
+    }
   }
 
   saveAccount() {
@@ -190,6 +193,7 @@ export class AppComponent implements OnInit {
     this.http.post(`${this.apiUrl}/accounts/${accountId}/sync`, {}).subscribe({
       next: () => {
         this.accountSyncStatus[accountId] = { loading: false, message: '¡Sincronización completada!', error: false };
+        this.loadImportantEmails();
         this.cdr.detectChanges();
         setTimeout(() => {
           if (this.accountSyncStatus[accountId]) {
