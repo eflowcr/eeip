@@ -69,36 +69,97 @@
           </div>
         </div>
 
-        <!-- Lista de Acciones Prioritarias -->
-        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Elementos de Acción Prioritarios</h3>
-        <div class="space-y-3">
-          <div *ngIf="importantEmails.length === 0" class="text-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Al día</h3>
-            <p class="mt-1 text-sm text-gray-500">No hay correos o incidentes que requieran tu atención crítica en este momento.</p>
+        <!-- Kanban Board -->
+        <div class="flex space-x-6 overflow-x-auto pb-4">
+          
+          <!-- Columna 1: Pendientes -->
+          <div class="flex-shrink-0 w-80 bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3 flex items-center justify-between">
+              Mensajes Analizados
+              <span class="bg-gray-200 text-gray-700 py-1 px-2 rounded-full text-xs">{{ pendingEmails.length }}</span>
+            </h3>
+            <div class="space-y-3">
+              <div *ngIf="pendingEmails.length === 0" class="text-center py-6">
+                <p class="text-xs text-gray-500">No hay correos pendientes.</p>
+              </div>
+              <div *ngFor="let email of pendingEmails" class="bg-white p-3 rounded shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition relative group">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" 
+                        [ngClass]="email.priority === 'Critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'">
+                    {{ email.priority === 'Critical' ? 'CRÍTICO' : 'ALTO' }}
+                  </span>
+                  <span class="text-xs text-gray-400">{{ email.received_at | date:'MMM d' }}</span>
+                </div>
+                <h4 class="text-sm font-medium text-gray-900 mb-1 leading-tight">{{ email.subject }}</h4>
+                <p class="text-xs text-gray-500 mb-3 line-clamp-2">{{ email.sender_email }}</p>
+                
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                  <span class="text-[10px] font-medium text-gray-500 uppercase">{{ email.monitored_account }}</span>
+                  <div class="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button (click)="markAsAuditing(email.id)" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-xs font-medium">Auditar</button>
+                    <button (click)="markAsResolved(email.id)" class="bg-green-50 text-green-600 hover:bg-green-100 px-2 py-1 rounded text-xs font-medium">Cerrar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div *ngFor="let email of importantEmails" class="group flex items-start justify-between p-4 bg-white border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition cursor-pointer">
-            <div class="flex-1">
-              <div class="flex items-center space-x-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" *ngIf="email.priority === 'Critical'">Crítico</span>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800" *ngIf="email.priority === 'High'">Alto</span>
-                <span class="text-sm font-semibold text-gray-900">{{ email.sender_email }}</span>
+          <!-- Columna 2: En Auditoría -->
+          <div class="flex-shrink-0 w-80 bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <h3 class="text-sm font-semibold text-blue-800 uppercase tracking-wide mb-3 flex items-center justify-between">
+              En Auditoría
+              <span class="bg-blue-200 text-blue-800 py-1 px-2 rounded-full text-xs">{{ auditingEmails.length }}</span>
+            </h3>
+            <div class="space-y-3">
+              <div *ngIf="auditingEmails.length === 0" class="text-center py-6">
+                <p class="text-xs text-blue-400">No hay casos en revisión.</p>
               </div>
-              <p class="mt-1 text-sm text-gray-500 font-medium tracking-wide text-xs uppercase">Bandeja auditada: <span class="font-bold text-gray-700">{{ email.monitored_account }}</span></p>
-              <p class="mt-2 text-sm text-gray-800 font-medium">{{ email.subject }}</p>
-              <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
-                <span class="flex items-center"><svg class="mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>{{ email.category || 'General' }}</span>
-                <span class="flex items-center text-orange-600"><svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Tono: {{ email.detected_tone || 'Neutral' }}</span>
+              <div *ngFor="let email of auditingEmails" class="bg-white p-3 rounded shadow-sm border border-blue-200 cursor-pointer hover:shadow-md transition relative group">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" 
+                        [ngClass]="email.priority === 'Critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'">
+                    {{ email.priority === 'Critical' ? 'CRÍTICO' : 'ALTO' }}
+                  </span>
+                  <span class="text-xs text-gray-400">{{ email.received_at | date:'MMM d' }}</span>
+                </div>
+                <h4 class="text-sm font-medium text-gray-900 mb-1 leading-tight">{{ email.subject }}</h4>
+                <p class="text-xs text-gray-500 mb-3 line-clamp-2">{{ email.sender_email }}</p>
+                
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                  <span class="text-[10px] font-medium text-gray-500 uppercase">{{ email.monitored_account }}</span>
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button (click)="markAsResolved(email.id)" class="bg-green-50 text-green-600 hover:bg-green-100 px-2 py-1 rounded text-xs font-medium w-full">Finalizar</button>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="flex flex-col items-end space-y-2">
-              <button class="opacity-0 group-hover:opacity-100 ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">Ver Acción</button>
-              <button (click)="markAsResolved(email.id); $event.stopPropagation()" class="opacity-0 group-hover:opacity-100 ml-4 inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition">Finiquitar Caso</button>
             </div>
           </div>
+
+          <!-- Columna 3: Cerrados -->
+          <div class="flex-shrink-0 w-80 bg-gray-100 rounded-lg p-4 border border-gray-200 opacity-75">
+            <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center justify-between">
+              Cerrados
+              <span class="bg-gray-300 text-gray-700 py-1 px-2 rounded-full text-xs">{{ closedEmails.length }}</span>
+            </h3>
+            <div class="space-y-3">
+              <div *ngIf="closedEmails.length === 0" class="text-center py-6">
+                <p class="text-xs text-gray-400">Sin historial reciente.</p>
+              </div>
+              <div *ngFor="let email of closedEmails" class="bg-white p-3 rounded shadow-sm border border-gray-200 cursor-pointer">
+                <div class="flex justify-between items-start mb-2 opacity-60">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-200 text-gray-600">
+                    RESUELTO
+                  </span>
+                  <span class="text-xs text-gray-400">{{ email.received_at | date:'MMM d' }}</span>
+                </div>
+                <h4 class="text-sm font-medium text-gray-500 line-through mb-1 leading-tight">{{ email.subject }}</h4>
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                  <span class="text-[10px] font-medium text-gray-400 uppercase">{{ email.monitored_account }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
       

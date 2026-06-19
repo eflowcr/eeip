@@ -13,6 +13,10 @@ import { FormsModule } from '@angular/forms';
 export class AppComponent implements OnInit {
   title = 'EEIP - Plataforma de Inteligencia Ejecutiva';
   importantEmails: any[] = [];
+  pendingEmails: any[] = [];
+  auditingEmails: any[] = [];
+  closedEmails: any[] = [];
+  
   inbox: any[] = [];
   risks: any[] = [];
   commitments: any[] = [];
@@ -66,10 +70,13 @@ export class AppComponent implements OnInit {
   }
 
   loadImportantEmails() {
-    this.http.get<any[]>(`${this.apiUrl}/emails/important?limit=10`).subscribe({
+    this.http.get<any[]>(`${this.apiUrl}/emails/important?limit=50`).subscribe({
       next: (data) => {
         if (data) {
           this.importantEmails = data;
+          this.pendingEmails = data.filter(e => e.status === 'Unread' || e.status === 'Read' || !e.status);
+          this.auditingEmails = data.filter(e => e.status === 'Auditing');
+          this.closedEmails = data.filter(e => e.status === 'Actioned');
         }
       },
       error: (err) => {
@@ -79,7 +86,7 @@ export class AppComponent implements OnInit {
   }
 
   getCriticalCount(): number {
-    return this.importantEmails.filter(e => e.priority === 'Critical').length;
+    return this.pendingEmails.filter(e => e.priority === 'Critical').length + this.auditingEmails.filter(e => e.priority === 'Critical').length;
   }
 
   loadInbox() {
@@ -104,12 +111,26 @@ export class AppComponent implements OnInit {
     }
   }
 
+  markAsAuditing(emailId: string) {
+    this.http.put(`${this.apiUrl}/emails/${emailId}/status`, { status: 'Auditing' }).subscribe({
+      next: () => {
+        const email = this.importantEmails.find(e => e.id === emailId);
+        if (email) email.status = 'Auditing';
+        this.pendingEmails = this.pendingEmails.filter(e => e.id !== emailId);
+        if (email) this.auditingEmails.unshift(email);
+      },
+      error: (err) => console.error('Error marking as auditing', err)
+    });
+  }
+
   markAsResolved(emailId: string) {
     this.http.put(`${this.apiUrl}/emails/${emailId}/status`, { status: 'Actioned' }).subscribe({
       next: () => {
-        // Remove it from the UI immediately to feel fast
-        this.importantEmails = this.importantEmails.filter(e => e.id !== emailId);
-        this.inbox = this.inbox.filter(e => e.id !== emailId);
+        const email = this.importantEmails.find(e => e.id === emailId);
+        if (email) email.status = 'Actioned';
+        this.pendingEmails = this.pendingEmails.filter(e => e.id !== emailId);
+        this.auditingEmails = this.auditingEmails.filter(e => e.id !== emailId);
+        if (email) this.closedEmails.unshift(email);
       },
       error: (err) => console.error('Error marking as resolved', err)
     });
@@ -143,8 +164,6 @@ export class AppComponent implements OnInit {
   resetAccountForm() {
     this.newAccount = { account_name: '', email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '' };
     this.editingAccountId = null;
-    this.accountSuccessMessage = '';
-    this.accountErrorMessage = '';
   }
 
   editAccount(acc: any) {
