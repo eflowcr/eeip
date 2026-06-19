@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/eprac/eeip-backend/internal/domain/models"
