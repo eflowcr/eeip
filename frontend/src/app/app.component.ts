@@ -155,6 +155,8 @@ export class AppComponent implements OnInit {
           this.pendingEmails = data.filter(e => e.status === 'Unread' || e.status === 'Read' || !e.status);
           this.auditingEmails = data.filter(e => e.status === 'Auditing');
           this.closedEmails = data.filter(e => e.status === 'Actioned' && isToday(e.updated_at));
+          this.risks = data.filter(e => (e.customer_risk_score && e.customer_risk_score > 50) || (e.escalation_risk_score && e.escalation_risk_score > 50) || e.priority === 'Critical');
+          this.commitments = data.filter(e => e.requires_action === true);
           this.cdr.detectChanges();
         }
       },
