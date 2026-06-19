@@ -68,7 +68,7 @@ func main() {
 	// Services
 	openAIKey := getEnv("OPENAI_API_KEY", "mock-key")
 	var aiEngine services.AIClassificationEngine
-	if openAIKey == "mock-key" {
+	if openAIKey == "mock-key" || openAIKey == "tu_openai_key_aqui" || openAIKey == "" {
 		aiEngine = services.NewMockAIEngine()
 	} else {
 		aiEngine = services.NewAIClassificationEngine(openAIKey)
