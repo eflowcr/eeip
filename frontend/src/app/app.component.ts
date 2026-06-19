@@ -77,10 +77,25 @@ export class AppComponent implements OnInit {
     });
   }
 
+  loadInbox() {
+    this.http.get<any[]>(`${this.apiUrl}/emails/all?limit=50`).subscribe({
+      next: (data) => {
+        if (data) {
+          this.inbox = data;
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando bandeja global', err);
+      }
+    });
+  }
+
   setTab(tab: string) {
     this.activeTab = tab;
-    if (tab === 'dashboard' || tab === 'inbox') {
+    if (tab === 'dashboard') {
       this.loadImportantEmails();
+    } else if (tab === 'inbox') {
+      this.loadInbox();
     }
   }
 

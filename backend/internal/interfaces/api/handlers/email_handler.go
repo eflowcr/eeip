@@ -33,6 +33,23 @@ func (h *EmailHandler) GetImportantEmails(c *gin.Context) {
 	c.JSON(http.StatusOK, emails)
 }
 
+func (h *EmailHandler) GetGlobalInbox(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "50")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit parameter"})
+		return
+	}
+
+	emails, err := h.repo.GetGlobalInbox(c.Request.Context(), limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch emails", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, emails)
+}
+
 func (h *EmailHandler) GetEmailsByAccount(c *gin.Context) {
 	accountID := c.Param("accountId")
 	limitStr := c.DefaultQuery("limit", "20")

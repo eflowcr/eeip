@@ -10,6 +10,7 @@ type EmailRepository interface {
 	SaveEmail(ctx context.Context, email *models.Email) error
 	GetEmailsByAccount(ctx context.Context, accountID string, limit, offset int) ([]models.Email, error)
 	GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error)
+	GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error)
 }
 
 type emailRepository struct {
@@ -64,6 +65,13 @@ func (r *emailRepository) GetEmailsByAccount(ctx context.Context, accountID stri
 func (r *emailRepository) GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error) {
 	var emails []models.Email
 	query := `SELECT * FROM emails WHERE (priority IN ('Critical', 'High') OR requires_action = true) AND category NOT IN ('Ruido', 'Informativo') ORDER BY received_at DESC LIMIT $1`
+	err := r.db.SelectContext(ctx, &emails, query, limit)
+	return emails, err
+}
+
+func (r *emailRepository) GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error) {
+	var emails []models.Email
+	query := `SELECT * FROM emails ORDER BY received_at DESC LIMIT $1`
 	err := r.db.SelectContext(ctx, &emails, query, limit)
 	return emails, err
 }

@@ -105,7 +105,36 @@
           <p class="text-sm text-gray-500">Aún no se han sincronizado correos o no hay datos disponibles.</p>
         </div>
         <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg" *ngIf="inbox.length > 0">
-          <!-- ... estructura de la tabla se mantiene pero traducida si hay datos ... -->
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Remitente</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Asunto</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Categoría AI</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Prioridad</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              <tr *ngFor="let email of inbox" class="hover:bg-gray-50">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{{ email.sender_email }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-xs truncate">{{ email.subject }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {{ email.category || 'Sin clasificar' }}
+                  </span>
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                        [ngClass]="{'bg-red-100 text-red-800': email.priority === 'Critical', 
+                                    'bg-yellow-100 text-yellow-800': email.priority === 'High',
+                                    'bg-blue-100 text-blue-800': email.priority === 'Medium',
+                                    'bg-gray-100 text-gray-800': email.priority === 'Low' || !email.priority}">
+                    {{ email.priority || 'N/A' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
