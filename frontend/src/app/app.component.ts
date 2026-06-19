@@ -152,6 +152,12 @@ export class AppComponent implements OnInit {
     email.expanded = !email.expanded;
   }
 
+  isCritical(email: any): boolean {
+    const isCriticalPriority = email.priority === 'Critical' || email.priority === 'Urgent';
+    const isNegativeTone = email.detected_tone === 'Angry' || email.detected_tone === 'Frustrated' || email.detected_tone === 'Molesto';
+    return isCriticalPriority || isNegativeTone;
+  }
+
   generateSummary(email: any, event: Event) {
     event.stopPropagation();
     if (email.summary) {

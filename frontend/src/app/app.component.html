@@ -95,7 +95,9 @@
               <div *ngIf="filteredPendingEmails.length === 0" class="text-center py-6">
                 <p class="text-xs text-gray-500">No hay correos pendientes.</p>
               </div>
-              <div *ngFor="let email of filteredPendingEmails" (click)="toggleExpand(email)" class="bg-white p-3 rounded shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition relative group">
+              <div *ngFor="let email of filteredPendingEmails" (click)="toggleExpand(email)" 
+                   class="p-3 rounded shadow-sm border cursor-pointer hover:shadow-md transition relative group"
+                   [ngClass]="isCritical(email) ? 'bg-red-50 border-red-300' : 'bg-white border-gray-200'">
                 <div class="flex justify-between items-start mb-2">
                   <div class="flex space-x-1">
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" 
@@ -160,7 +162,9 @@
               <div *ngIf="filteredAuditingEmails.length === 0" class="text-center py-6">
                 <p class="text-xs text-blue-400">No hay casos en revisión.</p>
               </div>
-              <div *ngFor="let email of filteredAuditingEmails" (click)="toggleExpand(email)" class="bg-white p-3 rounded shadow-sm border border-blue-200 cursor-pointer hover:shadow-md transition relative group">
+              <div *ngFor="let email of filteredAuditingEmails" (click)="toggleExpand(email)" 
+                   class="p-3 rounded shadow-sm border cursor-pointer hover:shadow-md transition relative group"
+                   [ngClass]="isCritical(email) ? 'bg-red-50 border-red-300' : 'bg-white border-blue-200'">
                 <div class="flex justify-between items-start mb-2">
                   <div class="flex space-x-1">
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold" 
