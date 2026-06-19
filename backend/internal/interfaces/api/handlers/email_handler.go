@@ -66,3 +66,21 @@ func (h *EmailHandler) GetEmailsByAccount(c *gin.Context) {
 
 	c.JSON(http.StatusOK, emails)
 }
+
+func (h *EmailHandler) UpdateEmailStatus(c *gin.Context) {
+	emailID := c.Param("emailId")
+	var req struct {
+		Status string `json:"status" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.repo.UpdateEmailStatus(c.Request.Context(), emailID, req.Status); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update email status", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Status updated successfully"})
+}

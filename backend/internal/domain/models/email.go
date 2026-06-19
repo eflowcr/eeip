@@ -37,6 +37,7 @@ type Email struct {
 
 	Status            string    `json:"status" db:"status"`
 	SuggestedAssignee *string   `json:"suggested_assignee" db:"suggested_assignee"`
+	MonitoredAccount  *string   `json:"monitored_account" db:"monitored_account"`
 	CreatedAt         time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`
 }

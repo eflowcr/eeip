@@ -103,6 +103,17 @@ export class AppComponent implements OnInit {
     }
   }
 
+  markAsResolved(emailId: string) {
+    this.http.put(`${this.apiUrl}/emails/${emailId}/status`, { status: 'Actioned' }).subscribe({
+      next: () => {
+        // Remove it from the UI immediately to feel fast
+        this.importantEmails = this.importantEmails.filter(e => e.id !== emailId);
+        this.inbox = this.inbox.filter(e => e.id !== emailId);
+      },
+      error: (err) => console.error('Error marking as resolved', err)
+    });
+  }
+
   saveAccount() {
     this.isSavingAccount = true;
     this.accountSuccessMessage = '';

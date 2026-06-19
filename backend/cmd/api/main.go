@@ -87,6 +87,7 @@ func main() {
 		
 		api.GET("/emails/important", emailHandler.GetImportantEmails)
 		api.GET("/emails/all", emailHandler.GetGlobalInbox)
+		api.PUT("/emails/:emailId/status", emailHandler.UpdateEmailStatus)
 		api.GET("/accounts/:accountId/emails", emailHandler.GetEmailsByAccount)
 		api.POST("/accounts", accountHandler.CreateAccount)
 		api.GET("/accounts", accountHandler.GetAccounts)

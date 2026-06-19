@@ -87,13 +87,17 @@
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800" *ngIf="email.priority === 'High'">Alto</span>
                 <span class="text-sm font-semibold text-gray-900">{{ email.sender_email }}</span>
               </div>
-              <p class="mt-1 text-sm text-gray-800 font-medium">{{ email.subject }}</p>
+              <p class="mt-1 text-sm text-gray-500 font-medium tracking-wide text-xs uppercase">Bandeja auditada: <span class="font-bold text-gray-700">{{ email.monitored_account }}</span></p>
+              <p class="mt-2 text-sm text-gray-800 font-medium">{{ email.subject }}</p>
               <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
                 <span class="flex items-center"><svg class="mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>{{ email.category || 'General' }}</span>
                 <span class="flex items-center text-orange-600"><svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Tono: {{ email.detected_tone || 'Neutral' }}</span>
               </div>
             </div>
-            <button class="opacity-0 group-hover:opacity-100 ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">Ver Acción</button>
+            <div class="flex flex-col items-end space-y-2">
+              <button class="opacity-0 group-hover:opacity-100 ml-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">Ver Acción</button>
+              <button (click)="markAsResolved(email.id); $event.stopPropagation()" class="opacity-0 group-hover:opacity-100 ml-4 inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition">Finiquitar Caso</button>
+            </div>
           </div>
         </div>
       </div>
@@ -108,7 +112,8 @@
           <table class="min-w-full divide-y divide-gray-300">
             <thead class="bg-gray-50">
               <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Remitente</th>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Bandeja Auditada</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Remitente</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Asunto</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Categoría AI</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Prioridad</th>
@@ -116,7 +121,8 @@
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
               <tr *ngFor="let email of inbox" class="hover:bg-gray-50">
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">{{ email.sender_email }}</td>
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-bold text-gray-700">{{ email.monitored_account }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">{{ email.sender_email }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-xs truncate">{{ email.subject }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">

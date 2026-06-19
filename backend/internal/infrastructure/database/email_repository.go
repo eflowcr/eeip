@@ -11,6 +11,7 @@ type EmailRepository interface {
 	GetEmailsByAccount(ctx context.Context, accountID string, limit, offset int) ([]models.Email, error)
 	GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error)
 	GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error)
+	UpdateEmailStatus(ctx context.Context, emailID string, status string) error
 }
 
 type emailRepository struct {
@@ -64,14 +65,29 @@ func (r *emailRepository) GetEmailsByAccount(ctx context.Context, accountID stri
 
 func (r *emailRepository) GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error) {
 	var emails []models.Email
-	query := `SELECT * FROM emails WHERE (priority IN ('Critical', 'High') OR requires_action = true) AND category NOT IN ('Ruido', 'Informativo') ORDER BY received_at DESC LIMIT $1`
+	query := `SELECT e.*, a.email_address as monitored_account
+	          FROM emails e
+	          JOIN email_accounts a ON e.account_id = a.id
+	          WHERE (e.priority IN ('Critical', 'High') OR e.requires_action = true)
+	          AND e.category NOT IN ('Ruido', 'Informativo')
+	          AND e.status != 'Actioned'
+	          ORDER BY e.received_at DESC LIMIT $1`
 	err := r.db.SelectContext(ctx, &emails, query, limit)
 	return emails, err
 }
 
 func (r *emailRepository) GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error) {
 	var emails []models.Email
-	query := `SELECT * FROM emails ORDER BY received_at DESC LIMIT $1`
+	query := `SELECT e.*, a.email_address as monitored_account
+	          FROM emails e
+	          JOIN email_accounts a ON e.account_id = a.id
+	          ORDER BY e.received_at DESC LIMIT $1`
 	err := r.db.SelectContext(ctx, &emails, query, limit)
 	return emails, err
+}
+
+func (r *emailRepository) UpdateEmailStatus(ctx context.Context, emailID string, status string) error {
+	query := `UPDATE emails SET status = $1, updated_at = NOW() WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, status, emailID)
+	return err
 }
