@@ -4,16 +4,18 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/eprac/eeip-backend/internal/application/services"
 	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 	"github.com/gin-gonic/gin"
 )
 
 type EmailHandler struct {
-	repo database.EmailRepository
+	repo       database.EmailRepository
+	summaryEng services.SummaryEngine
 }
 
-func NewEmailHandler(repo database.EmailRepository) *EmailHandler {
-	return &EmailHandler{repo: repo}
+func NewEmailHandler(repo database.EmailRepository, summaryEng services.SummaryEngine) *EmailHandler {
+	return &EmailHandler{repo: repo, summaryEng: summaryEng}
 }
 
 func (h *EmailHandler) GetImportantEmails(c *gin.Context) {
@@ -82,5 +84,39 @@ func (h *EmailHandler) UpdateEmailStatus(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Status updated successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Email status updated"})
+}
+
+func (h *EmailHandler) GenerateSummary(c *gin.Context) {
+	emailID := c.Param("emailId")
+
+	email, err := h.repo.GetEmailByID(c.Request.Context(), emailID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Email not found"})
+		return
+	}
+
+	if email.Summary != nil && *email.Summary != "" {
+		c.JSON(http.StatusOK, gin.H{"summary": *email.Summary})
+		return
+	}
+
+	body := ""
+	if email.BodyText != nil {
+		body = *email.BodyText
+	} else if email.BodyHTML != nil {
+		body = *email.BodyHTML
+	}
+
+	summary, err := h.summaryEng.GenerateEmailSummary(c.Request.Context(), body)
+	if err != nil {
+		// Log error but return a graceful fallback if OpenAI fails
+		fallback := "No se pudo generar el resumen automáticamente debido a un error del sistema."
+		c.JSON(http.StatusOK, gin.H{"summary": fallback, "error": err.Error()})
+		return
+	}
+
+	_ = h.repo.UpdateEmailSummary(c.Request.Context(), emailID, summary)
+
+	c.JSON(http.StatusOK, gin.H{"summary": summary})
 }

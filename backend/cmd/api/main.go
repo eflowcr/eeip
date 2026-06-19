@@ -74,9 +74,10 @@ func main() {
 		aiEngine = services.NewAIClassificationEngine(openAIKey)
 	}
 	emailCollector := services.NewEmailCollector(emailRepo, aiEngine)
+	summaryEngine := services.NewSummaryEngine(openAIKey)
 
 	// Handlers
-	emailHandler := handlers.NewEmailHandler(emailRepo)
+	emailHandler := handlers.NewEmailHandler(emailRepo, summaryEngine)
 	accountHandler := handlers.NewAccountHandler(accountRepo, emailCollector)
 
 	api := router.Group("/api/v1")
@@ -88,6 +89,7 @@ func main() {
 		api.GET("/emails/important", emailHandler.GetImportantEmails)
 		api.GET("/emails/all", emailHandler.GetGlobalInbox)
 		api.PUT("/emails/:emailId/status", emailHandler.UpdateEmailStatus)
+		api.POST("/emails/:emailId/summary", emailHandler.GenerateSummary)
 		api.GET("/accounts/:accountId/emails", emailHandler.GetEmailsByAccount)
 		api.POST("/accounts", accountHandler.CreateAccount)
 		api.GET("/accounts", accountHandler.GetAccounts)

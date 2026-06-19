@@ -12,6 +12,8 @@ type EmailRepository interface {
 	GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error)
 	GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error)
 	UpdateEmailStatus(ctx context.Context, emailID string, status string) error
+	GetEmailByID(ctx context.Context, emailID string) (*models.Email, error)
+	UpdateEmailSummary(ctx context.Context, emailID string, summary string) error
 }
 
 type emailRepository struct {
@@ -89,5 +91,18 @@ func (r *emailRepository) GetGlobalInbox(ctx context.Context, limit int) ([]mode
 func (r *emailRepository) UpdateEmailStatus(ctx context.Context, emailID string, status string) error {
 	query := `UPDATE emails SET status = $1, updated_at = NOW() WHERE id = $2`
 	_, err := r.db.ExecContext(ctx, query, status, emailID)
+	return err
+}
+
+func (r *emailRepository) GetEmailByID(ctx context.Context, emailID string) (*models.Email, error) {
+	var email models.Email
+	query := `SELECT * FROM emails WHERE id = $1`
+	err := r.db.GetContext(ctx, &email, query, emailID)
+	return &email, err
+}
+
+func (r *emailRepository) UpdateEmailSummary(ctx context.Context, emailID string, summary string) error {
+	query := `UPDATE emails SET summary = $1, updated_at = NOW() WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, summary, emailID)
 	return err
 }

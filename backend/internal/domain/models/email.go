@@ -24,6 +24,7 @@ type Email struct {
 	RequiresApproval bool            `json:"requires_approval" db:"requires_approval"`
 	IsDelegable      bool            `json:"is_delegable" db:"is_delegable"`
 	Deadline         *time.Time      `json:"deadline" db:"deadline"`
+	Summary          *string         `json:"summary" db:"summary"`
 
 	Sentiment             *string `json:"sentiment" db:"sentiment"`
 	SentimentScore        *int    `json:"sentiment_score" db:"sentiment_score"`

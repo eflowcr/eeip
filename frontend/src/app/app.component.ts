@@ -144,7 +144,33 @@ export class AppComponent implements OnInit {
     }
   }
 
-  markAsAuditing(emailId: string) {
+  loadingSummaryId: string | null = null;
+
+  toggleExpand(email: any) {
+    email.expanded = !email.expanded;
+  }
+
+  generateSummary(email: any, event: Event) {
+    event.stopPropagation();
+    if (email.summary) {
+      return; // Already generated
+    }
+    this.loadingSummaryId = email.id;
+    this.http.post<{summary: string}>(`${this.apiUrl}/emails/${email.id}/summary`, {}).subscribe({
+      next: (res) => {
+        email.summary = res.summary;
+        this.loadingSummaryId = null;
+      },
+      error: (err) => {
+        console.error('Error generating summary', err);
+        email.summary = 'No se pudo generar el resumen en este momento.';
+        this.loadingSummaryId = null;
+      }
+    });
+  }
+
+  markAsAuditing(emailId: string, event: Event) {
+    event.stopPropagation();
     this.http.put(`${this.apiUrl}/emails/${emailId}/status`, { status: 'Auditing' }).subscribe({
       next: () => {
         const email = this.importantEmails.find(e => e.id === emailId);
@@ -156,7 +182,8 @@ export class AppComponent implements OnInit {
     });
   }
 
-  markAsResolved(emailId: string) {
+  markAsResolved(emailId: string, event: Event) {
+    event.stopPropagation();
     this.http.put(`${this.apiUrl}/emails/${emailId}/status`, { status: 'Actioned' }).subscribe({
       next: () => {
         const email = this.importantEmails.find(e => e.id === emailId);
