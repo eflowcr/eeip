@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 
@@ -39,9 +40,14 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 func (h *AccountHandler) GetAccounts(c *gin.Context) {
 	accounts, err := h.repo.GetAccounts(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch accounts", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get accounts", "details": err.Error()})
 		return
 	}
+	
+	for i := range accounts {
+		accounts[i].IMAPPassword = "" // Never send password back to frontend
+	}
+	
 	c.JSON(http.StatusOK, accounts)
 }
 
@@ -80,7 +86,8 @@ func (h *AccountHandler) TestConnection(c *gin.Context) {
 	var cIMAP *client.Client
 	var err error
 	if req.IMAPPort == 993 {
-		cIMAP, err = client.DialTLS(fmt.Sprintf("%s:%d", req.IMAPHost, req.IMAPPort), nil)
+		tlsConfig := &tls.Config{InsecureSkipVerify: true}
+		cIMAP, err = client.DialTLS(fmt.Sprintf("%s:%d", req.IMAPHost, req.IMAPPort), tlsConfig)
 	} else {
 		cIMAP, err = client.Dial(fmt.Sprintf("%s:%d", req.IMAPHost, req.IMAPPort))
 	}

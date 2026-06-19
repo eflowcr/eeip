@@ -144,7 +144,8 @@ export class AppComponent implements OnInit {
       },
       error: (err) => {
         this.isTestingConnection = false;
-        this.accountErrorMessage = 'Error de conexión IMAP: Credenciales inválidas o servidor inalcanzable.';
+        const msg = err.error?.details || 'Credenciales inválidas o servidor inalcanzable.';
+        this.accountErrorMessage = `Error IMAP: ${msg}`;
       }
     });
   }
