@@ -64,6 +64,7 @@ func main() {
 	sqlxDB := sqlx.NewDb(db, "postgres")
 	emailRepo := database.NewEmailRepository(sqlxDB)
 	accountRepo := database.NewAccountRepository(sqlxDB)
+	stakeholderRepo := database.NewStakeholderRepository(sqlxDB)
 
 	// Services
 	openAIKey := getEnv("OPENAI_API_KEY", "mock-key")
@@ -79,6 +80,7 @@ func main() {
 	// Handlers
 	emailHandler := handlers.NewEmailHandler(emailRepo, summaryEngine)
 	accountHandler := handlers.NewAccountHandler(accountRepo, emailCollector)
+	stakeholderHandler := handlers.NewStakeholderHandler(stakeholderRepo)
 
 	api := router.Group("/api/v1")
 	{
@@ -98,6 +100,10 @@ func main() {
 		api.POST("/accounts/test", accountHandler.TestConnection)
 		api.POST("/accounts/:accountId/test", accountHandler.TestExistingConnection)
 		api.POST("/accounts/:accountId/sync", accountHandler.SyncAccount)
+		
+		api.POST("/stakeholders", stakeholderHandler.CreateStakeholder)
+		api.GET("/stakeholders", stakeholderHandler.GetStakeholders)
+		api.DELETE("/stakeholders/:id", stakeholderHandler.DeleteStakeholder)
 	}
 
 	srv := &http.Server{

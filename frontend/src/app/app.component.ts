@@ -115,10 +115,19 @@ export class AppComponent implements OnInit {
   // Para pruebas en línea en la lista
   accountTestStatus: { [id: string]: { loading: boolean, message: string, error: boolean } } = {};
   accountSyncStatus: { [id: string]: { loading: boolean, message: string, error: boolean } } = {};
+  // Stakeholders
+  stakeholders: any[] = [];
+  newStakeholder: any = {
+    name: '',
+    email: '',
+    telegram_chat_id: ''
+  };
+  isSavingStakeholder = false;
 
   ngOnInit() {
     this.loadImportantEmails();
     this.loadAccounts();
+    this.loadStakeholders();
     this.inbox = [];
     this.risks = [];
     this.commitments = [];
@@ -135,6 +144,48 @@ export class AppComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cargando cuentas', err);
+      }
+    });
+  }
+
+  loadStakeholders() {
+    this.http.get<any[]>(`${this.apiUrl}/stakeholders`).subscribe({
+      next: (data) => {
+        if (data) {
+          this.stakeholders = data;
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando interesados', err);
+      }
+    });
+  }
+
+  saveStakeholder() {
+    if (!this.newStakeholder.name || !this.newStakeholder.email) return;
+    this.isSavingStakeholder = true;
+    this.http.post(`${this.apiUrl}/stakeholders`, this.newStakeholder).subscribe({
+      next: () => {
+        this.isSavingStakeholder = false;
+        this.newStakeholder = { name: '', email: '', telegram_chat_id: '' };
+        this.loadStakeholders();
+      },
+      error: (err) => {
+        this.isSavingStakeholder = false;
+        console.error('Error guardando interesado', err);
+      }
+    });
+  }
+
+  deleteStakeholder(id: string) {
+    if (!confirm('¿Estás seguro de eliminar a este interesado?')) return;
+    this.http.delete(`${this.apiUrl}/stakeholders/${id}`).subscribe({
+      next: () => {
+        this.loadStakeholders();
+      },
+      error: (err) => {
+        console.error('Error eliminando interesado', err);
       }
     });
   }
@@ -228,6 +279,7 @@ export class AppComponent implements OnInit {
   inboxSearchRecipient: string = '';
   inboxFilterCategory: string = '';
   inboxFilterPriority: string = '';
+  inboxFilterTone: string = '';
 
   get activeInboxCategories(): string[] {
     const cats = new Set<string>();
@@ -243,6 +295,14 @@ export class AppComponent implements OnInit {
       if (e.priority) prios.add(e.priority);
     });
     return Array.from(prios).sort();
+  }
+
+  get activeInboxTones(): string[] {
+    const tones = new Set<string>();
+    this.inbox.forEach(e => {
+      if (e.detected_tone) tones.add(e.detected_tone);
+    });
+    return Array.from(tones).sort();
   }
 
   get filteredInbox() {
@@ -267,7 +327,12 @@ export class AppComponent implements OnInit {
         matchPriority = e.priority === this.inboxFilterPriority;
       }
 
-      return matchSender && matchRecipient && matchCategory && matchPriority;
+      let matchTone = true;
+      if (this.inboxFilterTone) {
+        matchTone = e.detected_tone === this.inboxFilterTone;
+      }
+
+      return matchSender && matchRecipient && matchCategory && matchPriority && matchTone;
     });
   }
 
