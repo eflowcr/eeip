@@ -211,7 +211,7 @@ export class AppComponent implements OnInit {
   }
 
   loadInbox() {
-    this.http.get<any[]>(`${this.apiUrl}/emails/all?limit=50`).subscribe({
+    this.http.get<any[]>(`${this.apiUrl}/emails?limit=100`).subscribe({
       next: (data) => {
         if (data) {
           this.inbox = data;
@@ -220,6 +220,37 @@ export class AppComponent implements OnInit {
       error: (err) => {
         console.error('Error cargando bandeja global', err);
       }
+    });
+  }
+
+  inboxSearchSender: string = '';
+  inboxSearchRecipient: string = '';
+  inboxFilterCategory: string = '';
+  inboxFilterPriority: string = '';
+
+  get filteredInbox() {
+    return this.inbox.filter(e => {
+      let matchSender = true;
+      if (this.inboxSearchSender) {
+        matchSender = e.sender_email?.toLowerCase().includes(this.inboxSearchSender.toLowerCase());
+      }
+      
+      let matchRecipient = true;
+      if (this.inboxSearchRecipient) {
+        matchRecipient = e.monitored_account?.toLowerCase().includes(this.inboxSearchRecipient.toLowerCase());
+      }
+
+      let matchCategory = true;
+      if (this.inboxFilterCategory) {
+        matchCategory = e.category === this.inboxFilterCategory;
+      }
+
+      let matchPriority = true;
+      if (this.inboxFilterPriority) {
+        matchPriority = e.priority === this.inboxFilterPriority;
+      }
+
+      return matchSender && matchRecipient && matchCategory && matchPriority;
     });
   }
 

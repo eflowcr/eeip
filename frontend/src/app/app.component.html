@@ -282,24 +282,62 @@
       </div>
       
       <!-- Bandeja Global -->
-      <div *ngIf="activeTab === 'inbox'" class="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-2xl">
-        <h2 class="text-2xl font-bold text-white mb-6">Bandeja Global Ejecutiva</h2>
-        <div *ngIf="inbox.length === 0" class="text-center py-10 rounded-lg border-2 border-dashed border-white/20">
-          <p class="text-sm text-slate-400">Aún no se han sincronizado correos o no hay datos disponibles.</p>
+      <div *ngIf="activeTab === 'inbox'" class="bg-white/5 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-slate-900/50">
+          <h2 class="text-2xl font-bold text-white">Bandeja Global Ejecutiva</h2>
         </div>
-        <div class="overflow-x-auto shadow ring-1 ring-white/10 rounded-xl" *ngIf="inbox.length > 0">
-          <table class="min-w-full divide-y divide-white/10">
-            <thead class="bg-slate-900/80">
-              <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-bold text-slate-200">Bandeja Auditada</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Remitente</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Asunto</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Categoría AI</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Prioridad</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5 bg-slate-800/50">
-              <tr *ngFor="let email of inbox" class="hover:bg-slate-700/50 transition-colors">
+        
+        <div class="p-6 bg-slate-900/30">
+          <!-- Filtros de la Bandeja -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Buscar Remitente</label>
+              <input type="text" [(ngModel)]="inboxSearchSender" placeholder="ej. cliente@empresa.com" class="w-full bg-slate-800/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Buscar Destinatario</label>
+              <input type="text" [(ngModel)]="inboxSearchRecipient" placeholder="ej. cuenta monitoreada" class="w-full bg-slate-800/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Categoría AI</label>
+              <select [(ngModel)]="inboxFilterCategory" class="w-full bg-slate-800/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow appearance-none">
+                <option value="">Todas las categorías</option>
+                <option value="Cliente">Cliente</option>
+                <option value="Prospecto">Prospecto</option>
+                <option value="Soporte">Soporte</option>
+                <option value="Comercial">Comercial</option>
+                <option value="Ruido">Ruido</option>
+                <option value="Incidente">Incidente</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Prioridad</label>
+              <select [(ngModel)]="inboxFilterPriority" class="w-full bg-slate-800/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow appearance-none">
+                <option value="">Todas las prioridades</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+          </div>
+
+          <div *ngIf="filteredInbox.length === 0" class="text-center py-10 rounded-lg border-2 border-dashed border-white/20">
+            <p class="text-sm text-slate-400">No se encontraron correos con los filtros actuales o no hay datos.</p>
+          </div>
+          <div class="overflow-x-auto shadow ring-1 ring-white/10 rounded-xl" *ngIf="filteredInbox.length > 0">
+            <table class="min-w-full divide-y divide-white/10">
+              <thead class="bg-slate-900/80">
+                <tr>
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-bold text-slate-200">Bandeja Auditada</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Remitente</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Asunto</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Categoría AI</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Prioridad</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5 bg-slate-800/50">
+                <tr *ngFor="let email of filteredInbox" class="hover:bg-slate-700/50 transition-colors">
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-bold text-indigo-300">{{ email.monitored_account }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm font-medium text-slate-200">{{ email.sender_email }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-400 max-w-xs truncate">{{ email.subject }}</td>
@@ -320,6 +358,7 @@
               </tr>
             </tbody>
           </table>
+        </div>
         </div>
       </div>
 
