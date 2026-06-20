@@ -66,7 +66,10 @@ func main() {
 	}
 
 	router := gin.Default()
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
+	router.Use(cors.New(config))
 	
 	// Repositories
 	sqlxDB := sqlx.NewDb(db, "postgres")
