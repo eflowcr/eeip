@@ -120,6 +120,8 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 		recipientsJSON, _ := json.Marshal(recipients)
 
 		var bodyText string
+		var bodyHTML string
+		var rawBody string
 		for {
 			p, err := mr.NextPart()
 			if err == io.EOF {
@@ -133,9 +135,20 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 			case *mail.InlineHeader:
 				b, _ := io.ReadAll(p.Body)
 				contentType, _, _ := h.ContentType()
+				rawBody = string(b)
 				if contentType == "text/plain" {
 					bodyText = string(b)
+				} else if contentType == "text/html" {
+					bodyHTML = string(b)
 				}
+			}
+		}
+
+		if bodyText == "" {
+			if bodyHTML != "" {
+				bodyText = bodyHTML // Fallback to HTML
+			} else {
+				bodyText = rawBody // Ultimate fallback
 			}
 		}
 
