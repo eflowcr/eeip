@@ -216,6 +216,20 @@ export class AppComponent implements OnInit {
     });
   }
 
+  deleteUser(userId: string) {
+    if (confirm('¿Estás seguro de eliminar a este usuario del sistema?')) {
+      this.http.delete(`${this.apiUrl}/users/${userId}`).subscribe({
+        next: () => {
+          this.users = this.users.filter(u => u.id !== userId);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error eliminando usuario', err);
+        }
+      });
+    }
+  }
+
   saveStakeholder() {
     if (!this.newStakeholder.name || !this.newStakeholder.email) return;
     this.isSavingStakeholder = true;

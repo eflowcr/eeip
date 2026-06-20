@@ -726,6 +726,7 @@
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-bold text-slate-200">Email</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Rol</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Fecha de Registro</th>
+                <th scope="col" class="px-3 py-3.5 text-right text-sm font-bold text-slate-200">Acciones</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5 bg-slate-800/50">
@@ -744,6 +745,11 @@
                   </div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-400">{{ user.created_at | date:'mediumDate' }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-right text-sm font-medium">
+                  <button (click)="deleteUser(user.id)" class="text-red-400 hover:text-red-300 bg-red-400/10 hover:bg-red-400/20 p-2 rounded-lg transition-colors border border-transparent hover:border-red-400/30" title="Eliminar usuario">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>

@@ -49,3 +49,12 @@ func (h *UserHandler) UpdateRole(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Role updated successfully"})
 }
+
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	userID := c.Param("userId")
+	if err := h.userRepo.DeleteUser(c.Request.Context(), userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}

@@ -21,6 +21,7 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetAllUsers(ctx context.Context) ([]User, error)
 	UpdateUserRole(ctx context.Context, userID, role string) error
+	DeleteUser(ctx context.Context, userID string) error
 }
 
 type userRepository struct {
@@ -54,5 +55,11 @@ func (r *userRepository) GetAllUsers(ctx context.Context) ([]User, error) {
 func (r *userRepository) UpdateUserRole(ctx context.Context, userID, role string) error {
 	query := `UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2`
 	_, err := r.db.ExecContext(ctx, query, role, userID)
+	return err
+}
+
+func (r *userRepository) DeleteUser(ctx context.Context, userID string) error {
+	query := `DELETE FROM users WHERE id = $1`
+	_, err := r.db.ExecContext(ctx, query, userID)
 	return err
 }

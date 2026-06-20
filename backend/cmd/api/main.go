@@ -148,6 +148,7 @@ func main() {
 				// Admin only user management
 				adminOnly.GET("/users", userHandler.GetUsers)
 				adminOnly.PUT("/users/:userId/role", userHandler.UpdateRole)
+				adminOnly.DELETE("/users/:userId", userHandler.DeleteUser)
 			}
 		}
 	}
