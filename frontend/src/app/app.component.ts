@@ -131,6 +131,7 @@ export class AppComponent implements OnInit {
 
   // Charts
   public isQuantumChartCollapsed = false;
+  public isFiltersCollapsed = false;
   public dashboardChartOptions!: Partial<ChartOptions>;
   public stakeholdersChartOptions!: Partial<ChartOptions>;
 
