@@ -5,11 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from './auth.service';
 import { Login } from './login/login';
 import { environment } from '../environments/environment';
+import { ChartOptions } from './chart-types';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, Login],
+  imports: [CommonModule, FormsModule, Login, NgApexchartsModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -126,6 +128,10 @@ export class AppComponent implements OnInit {
   commitments: any[] = [];
   contacts: any[] = [];
   activeTab = 'dashboard';
+
+  // Charts
+  public dashboardChartOptions!: Partial<ChartOptions>;
+  public stakeholdersChartOptions!: Partial<ChartOptions>;
 
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
@@ -280,7 +286,7 @@ export class AppComponent implements OnInit {
           };
 
           this.importantEmails = data;
-          this.pendingEmails = data.filter(e => e.status === 'Unread' || e.status === 'Read' || !e.status);
+          this.pendingEmails = data.filter(e => (e.status === 'Unread' || e.status === 'Read' || !e.status) && (this.canAudit || !e.user_seen));
           this.auditingEmails = data.filter(e => e.status === 'Auditing');
           this.closedEmails = data.filter(e => e.status === 'Actioned' && isToday(e.updated_at));
           this.risks = data.filter(e => (e.customer_risk_score && e.customer_risk_score > 50) || (e.escalation_risk_score && e.escalation_risk_score > 50) || e.priority === 'Critical');
@@ -324,6 +330,8 @@ export class AppComponent implements OnInit {
               .sort((a, b) => (b.count as number) - (a.count as number));
             return contact;
           }).sort((a, b) => b.totalEmails - a.totalEmails);
+
+          this.initCharts();
 
           this.cdr.detectChanges();
         }
@@ -474,6 +482,21 @@ export class AppComponent implements OnInit {
     });
   }
 
+  markAsSeen(emailId: string, event: Event) {
+    event.stopPropagation();
+    this.http.put(`${this.apiUrl}/emails/${emailId}/seen`, {}).subscribe({
+      next: () => {
+        const email = this.importantEmails.find(e => e.id === emailId);
+        if (email) email.user_seen = true;
+        if (!this.canAudit) {
+          this.pendingEmails = this.pendingEmails.filter(e => e.id !== emailId);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error marking as seen', err)
+    });
+  }
+
   markAsResolved(emailId: string, event: Event) {
     event.stopPropagation();
     this.http.put(`${this.apiUrl}/emails/${emailId}/status`, { status: 'Actioned' }).subscribe({
@@ -611,5 +634,80 @@ export class AppComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  initCharts() {
+    const priorities = ['Crítico', 'Alto', 'Medio', 'Bajo', 'Critical', 'High', 'Medium', 'Low'];
+    const pGroups = ['Crítico', 'Alto', 'Medio', 'Bajo'];
+    const tonesMap = new Map<string, number[]>();
+
+    const getPriorityGroupIdx = (p: string) => {
+      if (!p) return 3;
+      const lp = p.toLowerCase();
+      if (lp.includes('crític') || lp.includes('critic')) return 0;
+      if (lp.includes('alto') || lp.includes('high')) return 1;
+      if (lp.includes('medio') || lp.includes('medium')) return 2;
+      return 3;
+    };
+
+    this.importantEmails.forEach(e => {
+      const pIdx = getPriorityGroupIdx(e.priority);
+      const tone = e.detected_tone || 'Neutral';
+      if (!tonesMap.has(tone)) {
+        tonesMap.set(tone, [0, 0, 0, 0]);
+      }
+      tonesMap.get(tone)![pIdx]++;
+    });
+
+    const dashboardSeries = Array.from(tonesMap.entries()).map(([tone, data]) => ({
+      name: tone,
+      data: data
+    }));
+
+    this.dashboardChartOptions = {
+      series: dashboardSeries,
+      chart: { type: 'bar', height: 350, stacked: true, background: 'transparent', toolbar: { show: false }, dropShadow: { enabled: true, color: '#000', top: 0, left: 0, blur: 5, opacity: 0.3 } },
+      colors: ['#6366f1', '#10b981', '#d946ef', '#06b6d4', '#f59e0b', '#f43f5e'],
+      plotOptions: { bar: { horizontal: false, borderRadius: 4, columnWidth: '40%' } },
+      dataLabels: { enabled: false },
+      stroke: { width: 0, colors: ['transparent'] },
+      xaxis: { categories: pGroups, labels: { style: { colors: '#9ca3af' } } },
+      yaxis: { labels: { style: { colors: '#9ca3af' } } },
+      legend: { position: 'top', labels: { colors: '#9ca3af' } },
+      grid: { borderColor: '#374151', strokeDashArray: 4 },
+      tooltip: { theme: 'dark' }
+    };
+
+    const stkTonesMap = new Map<string, number[]>();
+    const stakeholderNames = this.contacts.slice(0, 10).map(c => c.email);
+
+    this.contacts.slice(0, 10).forEach((c, idx) => {
+      c.topTones.forEach((t: any) => {
+        const tone = t.tone;
+        if (!stkTonesMap.has(tone)) {
+          stkTonesMap.set(tone, Array(10).fill(0));
+        }
+        stkTonesMap.get(tone)![idx] = t.count;
+      });
+    });
+
+    const stakeholdersSeries = Array.from(stkTonesMap.entries()).map(([tone, data]) => ({
+      name: tone,
+      data: data.slice(0, stakeholderNames.length)
+    }));
+
+    this.stakeholdersChartOptions = {
+      series: stakeholdersSeries,
+      chart: { type: 'bar', height: 350, stacked: true, background: 'transparent', toolbar: { show: false }, dropShadow: { enabled: true, color: '#000', top: 0, left: 0, blur: 5, opacity: 0.3 } },
+      colors: ['#06b6d4', '#d946ef', '#10b981', '#6366f1', '#f59e0b', '#f43f5e'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '50%' } },
+      dataLabels: { enabled: false },
+      stroke: { width: 0, colors: ['transparent'] },
+      xaxis: { categories: stakeholderNames, labels: { style: { colors: '#9ca3af' } } },
+      yaxis: { labels: { style: { colors: '#9ca3af' } } },
+      legend: { position: 'top', labels: { colors: '#9ca3af' } },
+      grid: { borderColor: '#374151', strokeDashArray: 4 },
+      tooltip: { theme: 'dark' }
+    };
   }
 }

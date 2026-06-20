@@ -141,3 +141,14 @@ func (h *EmailHandler) GenerateSummary(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"summary": summary})
 }
+
+func (h *EmailHandler) MarkAsSeen(c *gin.Context) {
+	emailID := c.Param("emailId")
+	
+	if err := h.repo.UpdateUserSeen(c.Request.Context(), emailID, true); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to mark email as seen", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Email marked as seen"})
+}

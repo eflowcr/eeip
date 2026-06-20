@@ -19,6 +19,7 @@ type EmailRepository interface {
 	GetEmailByID(ctx context.Context, emailID string) (*models.Email, error)
 	UpdateEmailSummary(ctx context.Context, emailID string, summary string) error
 	GetAlertEmails(ctx context.Context, since time.Time) ([]models.Email, error)
+	UpdateUserSeen(ctx context.Context, emailID string, seen bool) error
 }
 
 type emailRepository struct {
@@ -173,4 +174,10 @@ func (r *emailRepository) GetAlertEmails(ctx context.Context, since time.Time) (
 	`
 	err := r.db.SelectContext(ctx, &emails, query, since)
 	return emails, err
+}
+
+func (r *emailRepository) UpdateUserSeen(ctx context.Context, emailID string, seen bool) error {
+	query := `UPDATE emails SET user_seen = $1, updated_at = NOW() WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, seen, emailID)
+	return err
 }

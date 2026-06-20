@@ -120,6 +120,7 @@ func main() {
 			protected.GET("/emails/important", emailHandler.GetImportantEmails)
 			protected.GET("/emails/all", emailHandler.GetGlobalInbox)
 			protected.PUT("/emails/:emailId/status", emailHandler.UpdateEmailStatus)
+			protected.PUT("/emails/:emailId/seen", emailHandler.MarkAsSeen)
 			protected.POST("/emails/:emailId/summary", emailHandler.GenerateSummary)
 			protected.GET("/accounts/:accountId/emails", emailHandler.GetEmailsByAccount)
 			protected.GET("/accounts", accountHandler.GetAccounts)

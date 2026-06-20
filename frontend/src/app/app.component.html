@@ -143,6 +143,26 @@
           </div>
         </div>
 
+        <!-- Chart: Urgency vs Emotion -->
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl mb-6">
+          <h3 class="text-xl font-bold text-white mb-4">Análisis Cuántico: Urgencia vs Emoción</h3>
+          <div *ngIf="dashboardChartOptions && dashboardChartOptions.series">
+            <apx-chart
+              [series]="dashboardChartOptions.series"
+              [chart]="dashboardChartOptions.chart!"
+              [colors]="dashboardChartOptions.colors!"
+              [plotOptions]="dashboardChartOptions.plotOptions!"
+              [dataLabels]="dashboardChartOptions.dataLabels!"
+              [stroke]="dashboardChartOptions.stroke!"
+              [xaxis]="dashboardChartOptions.xaxis!"
+              [yaxis]="dashboardChartOptions.yaxis!"
+              [legend]="dashboardChartOptions.legend!"
+              [grid]="dashboardChartOptions.grid!"
+              [tooltip]="dashboardChartOptions.tooltip!">
+            </apx-chart>
+          </div>
+        </div>
+
         <!-- Kanban Board -->
         <div class="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6 pb-4">
           
@@ -208,9 +228,14 @@
                 
                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                   <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ email.monitored_account }}</span>
-                  <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity" *ngIf="canAudit">
-                    <button (click)="markAsAuditing(email.id, $event)" class="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Auditar</button>
-                    <button (click)="markAsResolved(email.id, $event)" class="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Cerrar</button>
+                  <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ng-container *ngIf="canAudit">
+                      <button (click)="markAsAuditing(email.id, $event)" class="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Auditar</button>
+                      <button (click)="markAsResolved(email.id, $event)" class="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Cerrar</button>
+                    </ng-container>
+                    <ng-container *ngIf="!canAudit">
+                      <button (click)="markAsSeen(email.id, $event)" class="bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 border border-indigo-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-lg shadow-indigo-500/20">Marcar como Visto</button>
+                    </ng-container>
                   </div>
                 </div>
               </div>
@@ -218,7 +243,7 @@
           </div>
 
           <!-- Columna 2: En Auditoría -->
-          <div class="flex-1 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-2xl min-w-[20rem]">
+          <div *ngIf="canAudit" class="flex-1 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-2xl min-w-[20rem]">
             <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center justify-between pb-3 border-b border-white/10">
               <span class="flex items-center">
                 <div class="w-2 h-2 rounded-full bg-blue-400 mr-2 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></div>
@@ -458,6 +483,24 @@
       <!-- Directorio y Seguimiento de Sentimiento -->
       <div *ngIf="activeTab === 'contacts'" class="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-2xl">
         <h2 class="text-2xl font-bold text-white mb-6">Directorio y Seguimiento de Sentimiento</h2>
+        
+        <div class="mb-8" *ngIf="stakeholdersChartOptions && stakeholdersChartOptions.series && contacts.length > 0">
+          <h3 class="text-xl font-bold text-white mb-4">Sentimientos por Stakeholder</h3>
+          <apx-chart
+            [series]="stakeholdersChartOptions.series"
+            [chart]="stakeholdersChartOptions.chart!"
+            [colors]="stakeholdersChartOptions.colors!"
+            [plotOptions]="stakeholdersChartOptions.plotOptions!"
+            [dataLabels]="stakeholdersChartOptions.dataLabels!"
+            [stroke]="stakeholdersChartOptions.stroke!"
+            [xaxis]="stakeholdersChartOptions.xaxis!"
+            [yaxis]="stakeholdersChartOptions.yaxis!"
+            [legend]="stakeholdersChartOptions.legend!"
+            [grid]="stakeholdersChartOptions.grid!"
+            [tooltip]="stakeholdersChartOptions.tooltip!">
+          </apx-chart>
+        </div>
+
         <div *ngIf="contacts.length === 0" class="text-center py-12 rounded-xl border-2 border-dashed border-white/20 bg-slate-900/30">
           <svg class="mx-auto h-16 w-16 text-indigo-500/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />

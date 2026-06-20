@@ -26,6 +26,7 @@ type Email struct {
 	Deadline         *time.Time      `json:"deadline" db:"deadline"`
 	Summary          *string         `json:"summary" db:"summary"`
 	IsReplied        bool            `json:"is_replied" db:"is_replied"`
+	UserSeen         bool            `json:"user_seen" db:"user_seen"`
 
 	Sentiment             *string `json:"sentiment" db:"sentiment"`
 	SentimentScore        *int    `json:"sentiment_score" db:"sentiment_score"`
