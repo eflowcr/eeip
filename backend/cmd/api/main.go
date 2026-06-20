@@ -78,6 +78,9 @@ func main() {
 	telegramSvc := services.NewTelegramService(telegramToken)
 	emailCollector := services.NewEmailCollector(emailRepo, aiEngine, stakeholderRepo, telegramSvc)
 	summaryEngine := services.NewSummaryEngine(openAIKey)
+	
+	cronService := services.NewCronService(emailRepo, stakeholderRepo, telegramSvc)
+	cronService.Start()
 
 	// Handlers
 	emailHandler := handlers.NewEmailHandler(emailRepo, summaryEngine)
@@ -132,6 +135,7 @@ func main() {
 		log.Fatal("Server forced to shutdown:", err)
 	}
 
+	cronService.Stop()
 	log.Println("Server exiting")
 }
 

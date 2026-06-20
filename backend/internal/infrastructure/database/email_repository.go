@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+	"time"
+
 	"github.com/eprac/eeip-backend/internal/domain/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -14,6 +16,7 @@ type EmailRepository interface {
 	UpdateEmailStatus(ctx context.Context, emailID string, status string) error
 	GetEmailByID(ctx context.Context, emailID string) (*models.Email, error)
 	UpdateEmailSummary(ctx context.Context, emailID string, summary string) error
+	GetAlertEmails(ctx context.Context, since time.Time) ([]models.Email, error)
 }
 
 type emailRepository struct {
@@ -108,4 +111,20 @@ func (r *emailRepository) UpdateEmailSummary(ctx context.Context, emailID string
 	query := `UPDATE emails SET summary = $1, updated_at = NOW() WHERE id = $2`
 	_, err := r.db.ExecContext(ctx, query, summary, emailID)
 	return err
+}
+
+func (r *emailRepository) GetAlertEmails(ctx context.Context, since time.Time) ([]models.Email, error) {
+	var emails []models.Email
+	query := `
+		SELECT * FROM emails 
+		WHERE received_at >= $1 
+		AND status != 'Responded'
+		AND (
+			priority IN ('Crítico', 'Critical', 'Urgente', 'Urgent') 
+			OR sentiment IN ('Peligro', 'Amenazante', 'Agresivo/violento')
+		)
+		ORDER BY received_at DESC
+	`
+	err := r.db.SelectContext(ctx, &emails, query, since)
+	return emails, err
 }
