@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/eflowcr/eeip/internal/domain/models"
-	"github.com/eflowcr/eeip/internal/infrastructure/database"
+	"github.com/eprac/eeip-backend/internal/domain/models"
+	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 )
 
 type StakeholderHandler struct {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/eflowcr/eeip/internal/domain/models"
+	"github.com/eprac/eeip-backend/internal/domain/models"
 )
 
 type StakeholderRepository struct {
