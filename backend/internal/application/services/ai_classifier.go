@@ -54,8 +54,8 @@ Please classify it according to the EEIP platform rules and provide a JSON respo
 - escalation_risk_score (0-100)
 - customer_risk_score (0-100)
 - detected_tone (MUST be exactly one of: Optimista, Confrontativo, Agresivo/violento, Amenazante, Neutral, Profesional, Frustrado, Formal, Comercial, Oportunidad de negocios)
-- recommended_action (string)
-- classification_explanation (string)
+- recommended_action (string, MUST be written in Spanish)
+- classification_explanation (string, MUST be written in Spanish)
 
 CRITICAL RULES & BUSINESS CONTEXT:
 1. You are auditing employee inboxes on behalf of the company's executive. Your primary goal is to find "dropped balls", angry customers, and neglected sales opportunities (e.g., software licenses, proposals).
@@ -63,6 +63,7 @@ CRITICAL RULES & BUSINESS CONTEXT:
 3. If the email is a clear sales opportunity, contract, or license request, set priority="High" and category="Comercial".
 4. If the email is a newsletter, promotional, automated marketing, vendor spam, or general news (like from connectab2b.com), you MUST classify it as category="Ruido" and priority="Low", and requires_action=false.
 5. Only mark requires_action=true if the executive needs to intervene or if the employee is neglecting an important issue.
+6. All textual descriptions (recommended_action, classification_explanation) MUST be written in Spanish.
 
 Return ONLY valid JSON.`, email.SenderEmail, *email.Subject, *email.BodyText)
 
