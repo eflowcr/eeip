@@ -302,22 +302,14 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Categoría AI</label>
               <select [(ngModel)]="inboxFilterCategory" class="w-full bg-slate-800/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow appearance-none">
                 <option value="">Todas las categorías</option>
-                <option value="Cliente">Cliente</option>
-                <option value="Prospecto">Prospecto</option>
-                <option value="Soporte">Soporte</option>
-                <option value="Comercial">Comercial</option>
-                <option value="Ruido">Ruido</option>
-                <option value="Incidente">Incidente</option>
+                <option *ngFor="let cat of activeInboxCategories" [value]="cat">{{ cat }}</option>
               </select>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Prioridad</label>
               <select [(ngModel)]="inboxFilterPriority" class="w-full bg-slate-800/80 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow appearance-none">
                 <option value="">Todas las prioridades</option>
-                <option value="Critical">Critical</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
+                <option *ngFor="let prio of activeInboxPriorities" [value]="prio">{{ prio }}</option>
               </select>
             </div>
           </div>

@@ -229,6 +229,22 @@ export class AppComponent implements OnInit {
   inboxFilterCategory: string = '';
   inboxFilterPriority: string = '';
 
+  get activeInboxCategories(): string[] {
+    const cats = new Set<string>();
+    this.inbox.forEach(e => {
+      if (e.category) cats.add(e.category);
+    });
+    return Array.from(cats).sort();
+  }
+
+  get activeInboxPriorities(): string[] {
+    const prios = new Set<string>();
+    this.inbox.forEach(e => {
+      if (e.priority) prios.add(e.priority);
+    });
+    return Array.from(prios).sort();
+  }
+
   get filteredInbox() {
     return this.inbox.filter(e => {
       let matchSender = true;
