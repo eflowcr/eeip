@@ -10,6 +10,7 @@ import (
 
 type EmailRepository interface {
 	SaveEmail(ctx context.Context, email *models.Email) error
+	EmailExists(ctx context.Context, accountID, senderEmail, subject string, receivedAt time.Time) (bool, error)
 	GetEmailsByAccount(ctx context.Context, accountID string, limit, offset int) ([]models.Email, error)
 	GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error)
 	GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error)
@@ -62,6 +63,16 @@ func (r *emailRepository) SaveEmail(ctx context.Context, email *models.Email) er
 		}
 	}
 	return nil
+}
+
+func (r *emailRepository) EmailExists(ctx context.Context, accountID, senderEmail, subject string, receivedAt time.Time) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(
+		SELECT 1 FROM emails 
+		WHERE account_id = $1 AND sender_email = $2 AND subject = $3 AND received_at = $4
+	)`
+	err := r.db.QueryRowContext(ctx, query, accountID, senderEmail, subject, receivedAt).Scan(&exists)
+	return exists, err
 }
 
 func (r *emailRepository) GetEmailsByAccount(ctx context.Context, accountID string, limit, offset int) ([]models.Email, error) {

@@ -174,6 +174,17 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 			Status:          "Unread",
 		}
 
+		// Check if email already exists
+		exists, err := s.repo.EmailExists(ctx, account.ID, senderEmail, subject, date)
+		if err != nil {
+			log.Printf("Failed to check if email exists: %v", err)
+		}
+		if exists {
+			// Update is_replied flag only
+			s.repo.SaveEmail(ctx, email)
+			continue
+		}
+
 		// AI Classification
 		if err := s.aiEngine.ClassifyEmail(ctx, email); err != nil {
 			log.Printf("Failed to classify email %s: %v", msgID, err)
