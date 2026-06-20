@@ -33,10 +33,9 @@ export class Login {
       
       const parts = newEmail.split('@');
       if (parts.length === 2 && parts[1]) {
-        const localPart = parts[0];
         const domain = parts[1].toLowerCase();
         
-        this.accountName = localPart;
+        this.accountName = newEmail;
 
         if (domain === 'gmail.com') {
           this.imapHost = 'imap.gmail.com';
@@ -45,12 +44,19 @@ export class Login {
         } else if (domain === 'yahoo.com') {
           this.imapHost = 'imap.mail.yahoo.com';
         } else {
-          this.imapHost = `imap.${domain}`;
+          this.imapHost = `mail.${domain}`;
         }
       } else {
         this.accountName = newEmail;
         this.imapHost = '';
       }
+    }
+  }
+
+  onPasswordChange(newPassword: string) {
+    this.password = newPassword;
+    if (!this.isLoginMode) {
+      this.imapPassword = newPassword;
     }
   }
 

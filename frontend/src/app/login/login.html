@@ -35,6 +35,7 @@
             id="password" 
             name="password"
             [(ngModel)]="password" 
+            (ngModelChange)="onPasswordChange($event)"
             class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-white placeholder-gray-500"
             placeholder="••••••••"
             required
