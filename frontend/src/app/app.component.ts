@@ -348,16 +348,25 @@ export class AppComponent implements OnInit {
     return this.pendingEmails.filter(e => e.priority === 'Critical').length + this.auditingEmails.filter(e => e.priority === 'Critical').length;
   }
 
+  isLoadingInbox = false;
+
   loadInbox() {
+    this.isLoadingInbox = true;
+    this.cdr.detectChanges();
     this.http.get<any[]>(`${this.apiUrl}/emails/all?limit=100`).subscribe({
       next: (data) => {
+        this.isLoadingInbox = false;
         if (data) {
           this.inbox = data;
-          this.cdr.detectChanges();
+        } else {
+          this.inbox = [];
         }
+        this.cdr.detectChanges();
       },
       error: (err) => {
+        this.isLoadingInbox = false;
         console.error('Error cargando bandeja global', err);
+        this.cdr.detectChanges();
       }
     });
   }
