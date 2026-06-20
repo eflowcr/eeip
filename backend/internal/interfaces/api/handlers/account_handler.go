@@ -6,17 +6,19 @@ import (
 	"net/http"
 
 	"github.com/emersion/go-imap/client"
+	"github.com/eprac/eeip-backend/internal/application/services"
 	"github.com/eprac/eeip-backend/internal/domain/models"
 	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 	"github.com/gin-gonic/gin"
 )
 
 type AccountHandler struct {
-	repo database.AccountRepository
+	repo      database.AccountRepository
+	collector services.EmailCollector
 }
 
-func NewAccountHandler(repo database.AccountRepository) *AccountHandler {
-	return &AccountHandler{repo: repo}
+func NewAccountHandler(repo database.AccountRepository, collector services.EmailCollector) *AccountHandler {
+	return &AccountHandler{repo: repo, collector: collector}
 }
 
 func (h *AccountHandler) CreateAccount(c *gin.Context) {
@@ -26,8 +28,14 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	// Hardcode the default user ID for MVP
-	req.UserID = "00000000-0000-0000-0000-000000000001"
+	// Set user ID from context if not provided
+	if req.UserID == "" {
+		if uid, exists := c.Get("userID"); exists {
+			req.UserID = uid.(string)
+		} else {
+			req.UserID = "00000000-0000-0000-0000-000000000001" // Ultimate fallback
+		}
+	}
 
 	if err := h.repo.CreateAccount(c.Request.Context(), &req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create account", "details": err.Error()})
@@ -38,7 +46,16 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 }
 
 func (h *AccountHandler) GetAccounts(c *gin.Context) {
-	accounts, err := h.repo.GetAccounts(c.Request.Context())
+	var accounts []models.EmailAccount
+	var err error
+
+	if role, ok := c.Get("userRole"); ok && role == "Normal" {
+		userID := c.MustGet("userID").(string)
+		accounts, err = h.repo.GetAccountsByUser(c.Request.Context(), userID)
+	} else {
+		accounts, err = h.repo.GetAccounts(c.Request.Context())
+	}
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get accounts", "details": err.Error()})
 		return
@@ -135,4 +152,22 @@ func (h *AccountHandler) TestExistingConnection(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Connection successful"})
+}
+
+func (h *AccountHandler) SyncAccount(c *gin.Context) {
+	accountId := c.Param("accountId")
+	
+	acc, err := h.repo.GetAccountByID(c.Request.Context(), accountId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
+		return
+	}
+
+	// For demonstration, we run synchronously to give immediate feedback.
+	if err := h.collector.CollectEmails(c.Request.Context(), acc); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Sync failed", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Account synchronized successfully"})
 }

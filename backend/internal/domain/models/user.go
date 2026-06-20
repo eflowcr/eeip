@@ -18,6 +18,7 @@ type EmailAccount struct {
 	ID            string     `json:"id" db:"id"`
 	UserID        string     `json:"user_id" db:"user_id"`
 	EmailAddress  string     `json:"email_address" db:"email_address"`
+	AccountName   string     `json:"account_name" db:"account_name"`
 	IMAPHost      string     `json:"imap_host" db:"imap_host"`
 	IMAPPort      int        `json:"imap_port" db:"imap_port"`
 	IMAPUser      string     `json:"imap_user" db:"imap_user"`

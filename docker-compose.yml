@@ -33,7 +33,7 @@ services:
       - DATABASE_NAME=${POSTGRES_DB:-eeip}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - JWT_SECRET=${JWT_SECRET:-supersecret}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_BOT_TOKEN=8965169071:AAFNECcRVXyOwp-WCu4yjmM71PM1MWNtbmI
     depends_on:
       postgres:
         condition: service_healthy

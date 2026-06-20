@@ -1,0 +1,145 @@
+<div class="min-h-screen bg-gray-900 flex items-center justify-center p-4 relative overflow-hidden text-gray-200">
+  <!-- Background decorators -->
+  <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/20 blur-[120px]"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/20 blur-[120px]"></div>
+  </div>
+
+  <div class="w-full max-w-md relative z-10">
+    <div class="glass-panel p-8 rounded-2xl shadow-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 mb-2">EEIP</h1>
+        <p class="text-gray-400 text-sm">Plataforma de Inteligencia Ejecutiva</p>
+      </div>
+
+      <form (ngSubmit)="submit()" class="space-y-6 max-h-[80vh] overflow-y-auto pr-2 scrollbar-thin">
+        <!-- Common fields -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2" for="email">Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email"
+            [ngModel]="email" 
+            (ngModelChange)="onEmailChange($event)" 
+            class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-white placeholder-gray-500"
+            placeholder="admin@example.com"
+            required
+          >
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2" for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password"
+            [(ngModel)]="password" 
+            (ngModelChange)="onPasswordChange($event)"
+            class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-white placeholder-gray-500"
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <!-- Register specific fields -->
+        <ng-container *ngIf="!isLoginMode">
+
+          <div class="pt-4 border-t border-white/10 mt-4">
+            <h3 class="text-sm font-medium text-purple-400 mb-4 uppercase tracking-wider">Email Account Configuration</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1" for="accountName">Account Name</label>
+                <input 
+                  type="text" 
+                  id="accountName" 
+                  name="accountName"
+                  [(ngModel)]="accountName" 
+                  class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-white placeholder-gray-500 text-sm"
+                  placeholder="e.g. Work Email"
+                  [required]="!isLoginMode"
+                >
+              </div>
+
+              <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-2">
+                  <label class="block text-xs font-medium text-gray-400 mb-1" for="imapHost">IMAP Host</label>
+                  <input 
+                    type="text" 
+                    id="imapHost" 
+                    name="imapHost"
+                    [(ngModel)]="imapHost" 
+                    class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-white placeholder-gray-500 text-sm"
+                    placeholder="imap.example.com"
+                    [required]="!isLoginMode"
+                  >
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-400 mb-1" for="imapPort">Port</label>
+                  <input 
+                    type="number" 
+                    id="imapPort" 
+                    name="imapPort"
+                    [(ngModel)]="imapPort" 
+                    class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-white placeholder-gray-500 text-sm"
+                    placeholder="993"
+                    [required]="!isLoginMode"
+                  >
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1" for="imapUser">IMAP User</label>
+                <input 
+                  type="text" 
+                  id="imapUser" 
+                  name="imapUser"
+                  [(ngModel)]="imapUser" 
+                  class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-white placeholder-gray-500 text-sm"
+                  placeholder="user@example.com"
+                  [required]="!isLoginMode"
+                >
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1" for="imapPassword">IMAP Password</label>
+                <input 
+                  type="password" 
+                  id="imapPassword" 
+                  name="imapPassword"
+                  [(ngModel)]="imapPassword" 
+                  class="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-white placeholder-gray-500 text-sm"
+                  placeholder="••••••••"
+                  [required]="!isLoginMode"
+                >
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <div *ngIf="errorMessage" class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">
+          {{ errorMessage }}
+        </div>
+
+        <button 
+          type="submit" 
+          [disabled]="isLoading"
+          class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-blue-500/25 flex justify-center items-center gap-2 disabled:opacity-70 mt-6"
+        >
+          <span *ngIf="isLoading" class="animate-spin w-5 h-5 border-2 border-white/20 border-t-white rounded-full"></span>
+          {{ isLoading ? (isLoginMode ? 'Ingresando...' : 'Registrando...') : (isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta') }}
+        </button>
+
+        <div class="text-center mt-4">
+          <button type="button" (click)="toggleMode()" class="text-sm text-blue-400 hover:text-blue-300 transition-colors bg-transparent border-none outline-none cursor-pointer">
+            {{ isLoginMode ? '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión' }}
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="text-center mt-6 text-gray-500 text-xs">
+      &copy; 2026 EEIP. Todos los derechos reservados.
+    </div>
+  </div>
+</div>

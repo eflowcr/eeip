@@ -24,6 +24,8 @@ type Email struct {
 	RequiresApproval bool            `json:"requires_approval" db:"requires_approval"`
 	IsDelegable      bool            `json:"is_delegable" db:"is_delegable"`
 	Deadline         *time.Time      `json:"deadline" db:"deadline"`
+	Summary          *string         `json:"summary" db:"summary"`
+	IsReplied        bool            `json:"is_replied" db:"is_replied"`
 
 	Sentiment             *string `json:"sentiment" db:"sentiment"`
 	SentimentScore        *int    `json:"sentiment_score" db:"sentiment_score"`
@@ -37,6 +39,7 @@ type Email struct {
 
 	Status            string    `json:"status" db:"status"`
 	SuggestedAssignee *string   `json:"suggested_assignee" db:"suggested_assignee"`
+	MonitoredAccount  *string   `json:"monitored_account" db:"monitored_account"`
 	CreatedAt         time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`
 }

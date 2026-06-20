@@ -9,6 +9,7 @@ import (
 type AccountRepository interface {
 	CreateAccount(ctx context.Context, account *models.EmailAccount) error
 	GetAccounts(ctx context.Context) ([]models.EmailAccount, error)
+	GetAccountsByUser(ctx context.Context, userID string) ([]models.EmailAccount, error)
 	GetAccountByID(ctx context.Context, id string) (*models.EmailAccount, error)
 	UpdateAccount(ctx context.Context, account *models.EmailAccount) error
 	DeleteAccount(ctx context.Context, id string) error
@@ -25,9 +26,9 @@ func NewAccountRepository(db *sqlx.DB) AccountRepository {
 func (r *accountRepository) CreateAccount(ctx context.Context, account *models.EmailAccount) error {
 	query := `
 		INSERT INTO email_accounts (
-			user_id, email_address, imap_host, imap_port, imap_user, imap_password
+			user_id, email_address, account_name, imap_host, imap_port, imap_user, imap_password
 		) VALUES (
-			:user_id, :email_address, :imap_host, :imap_port, :imap_user, :imap_password
+			:user_id, :email_address, :account_name, :imap_host, :imap_port, :imap_user, :imap_password
 		) RETURNING id, created_at, updated_at
 	`
 	rows, err := r.db.NamedQueryContext(ctx, query, account)
@@ -49,6 +50,13 @@ func (r *accountRepository) GetAccounts(ctx context.Context) ([]models.EmailAcco
 	return accounts, err
 }
 
+func (r *accountRepository) GetAccountsByUser(ctx context.Context, userID string) ([]models.EmailAccount, error) {
+	var accounts []models.EmailAccount
+	query := `SELECT * FROM email_accounts WHERE user_id = $1 ORDER BY created_at DESC`
+	err := r.db.SelectContext(ctx, &accounts, query, userID)
+	return accounts, err
+}
+
 func (r *accountRepository) GetAccountByID(ctx context.Context, id string) (*models.EmailAccount, error) {
 	var account models.EmailAccount
 	query := `SELECT * FROM email_accounts WHERE id = $1`
@@ -63,6 +71,7 @@ func (r *accountRepository) UpdateAccount(ctx context.Context, account *models.E
 	query := `
 		UPDATE email_accounts SET
 			email_address = :email_address,
+			account_name = :account_name,
 			imap_host = :imap_host,
 			imap_port = :imap_port,
 			imap_user = :imap_user,

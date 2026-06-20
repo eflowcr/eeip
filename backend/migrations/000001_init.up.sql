@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS email_accounts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     email_address VARCHAR(255) NOT NULL,
+    account_name VARCHAR(255) DEFAULT '',
     imap_host VARCHAR(255) NOT NULL,
     imap_port INT NOT NULL,
     imap_user VARCHAR(255) NOT NULL,
