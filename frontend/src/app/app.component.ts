@@ -130,6 +130,7 @@ export class AppComponent implements OnInit {
   activeTab = 'dashboard';
 
   // Charts
+  public isQuantumChartCollapsed = false;
   public dashboardChartOptions!: Partial<ChartOptions>;
   public stakeholdersChartOptions!: Partial<ChartOptions>;
 
