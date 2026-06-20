@@ -621,6 +621,11 @@
                   <input type="password" name="password" [(ngModel)]="newAccount.imap_password" required class="block w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
                 </div>
 
+                <div class="flex items-center mt-2">
+                  <input type="checkbox" name="is_private" [(ngModel)]="newAccount.is_private" id="is_private_toggle" class="w-4 h-4 text-indigo-600 bg-slate-900/50 border-white/10 rounded focus:ring-indigo-500 focus:ring-2">
+                  <label for="is_private_toggle" class="ml-2 text-sm font-bold text-slate-300">Cuenta Privada (Oculta de análisis globales, solo visible para el dueño)</label>
+                </div>
+
                 <div *ngIf="accountSuccessMessage" class="mt-4 p-4 bg-emerald-500/20 text-emerald-300 text-sm font-bold rounded-xl border border-emerald-500/30">
                   {{ accountSuccessMessage }}
                 </div>
@@ -673,6 +678,9 @@
                       <div class="flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" *ngIf="acc.is_active">
                           Online
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30" *ngIf="acc.is_private">
+                          Privada
                         </span>
                         <button (click)="testExistingAccount(acc.id)" [disabled]="accountTestStatus[acc.id]?.loading || accountSyncStatus[acc.id]?.loading" class="text-slate-300 hover:text-white text-xs font-bold border border-white/20 rounded-lg px-3 py-1.5 bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50">
                           Ping

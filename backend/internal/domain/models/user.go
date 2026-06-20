@@ -25,6 +25,7 @@ type EmailAccount struct {
 	IMAPPassword  string     `json:"imap_password,omitempty" db:"imap_password"`
 	LastSyncDate  *time.Time `json:"last_sync_date" db:"last_sync_date"`
 	IsActive      bool       `json:"is_active" db:"is_active"`
+	IsPrivate     bool       `json:"is_private" db:"is_private"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
 }

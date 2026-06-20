@@ -549,7 +549,7 @@ export class AppComponent implements OnInit {
   }
 
   resetAccountForm() {
-    this.newAccount = { account_name: '', email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '' };
+    this.newAccount = { account_name: '', email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '', is_private: false };
     this.editingAccountId = null;
   }
 
