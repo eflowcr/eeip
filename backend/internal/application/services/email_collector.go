@@ -75,7 +75,7 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 	messages := make(chan *imap.Message, 10)
 	done := make(chan error, 1)
 
-	var section imap.BodySectionName
+	section := &imap.BodySectionName{Peek: true}
 	go func() {
 		done <- c.Fetch(seqset, []imap.FetchItem{section.FetchItem(), imap.FetchFlags}, messages)
 	}()
@@ -86,7 +86,7 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 			continue
 		}
 
-		r := msg.GetBody(&section)
+		r := msg.GetBody(section)
 		if r == nil {
 			log.Println("Server didn't returned message body")
 			continue
