@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './auth.service';
 import { Login } from './login/login';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -120,7 +121,7 @@ export class AppComponent implements OnInit {
 
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
-  private apiUrl = 'http://localhost:10000/api/v1';
+  private apiUrl = environment.apiUrl;
 
   // Configuración de cuenta
   accounts: any[] = [];
