@@ -16,15 +16,21 @@ import (
 	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 	"github.com/eprac/eeip-backend/internal/interfaces/api/handlers"
 
+	"github.com/emersion/go-message"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+	"golang.org/x/net/html/charset"
 )
+
+func init() {
+	message.CharsetReader = charset.NewReaderLabel
+}
 
 func main() {
 	_ = godotenv.Load()
