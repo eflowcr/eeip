@@ -27,13 +27,15 @@ func (h *EmailHandler) GetImportantEmails(c *gin.Context) {
 	}
 
 	var filterUserID string
-	if role, ok := c.Get("userRole"); ok && role == "Normal" {
-		if uid, ok := c.Get("userID"); ok {
-			filterUserID = uid.(string)
-		}
+	var userRole string
+	if role, ok := c.Get("userRole"); ok {
+		userRole = role.(string)
+	}
+	if uid, ok := c.Get("userID"); ok {
+		filterUserID = uid.(string)
 	}
 
-	emails, err := h.repo.GetImportantEmails(c.Request.Context(), filterUserID, limit)
+	emails, err := h.repo.GetImportantEmails(c.Request.Context(), filterUserID, userRole, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch emails", "details": err.Error()})
 		return
@@ -51,13 +53,15 @@ func (h *EmailHandler) GetGlobalInbox(c *gin.Context) {
 	}
 
 	var filterUserID string
-	if role, ok := c.Get("userRole"); ok && role == "Normal" {
-		if uid, ok := c.Get("userID"); ok {
-			filterUserID = uid.(string)
-		}
+	var userRole string
+	if role, ok := c.Get("userRole"); ok {
+		userRole = role.(string)
+	}
+	if uid, ok := c.Get("userID"); ok {
+		filterUserID = uid.(string)
 	}
 
-	emails, err := h.repo.GetGlobalInbox(c.Request.Context(), filterUserID, limit)
+	emails, err := h.repo.GetGlobalInbox(c.Request.Context(), filterUserID, userRole, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch emails", "details": err.Error()})
 		return
@@ -140,4 +144,15 @@ func (h *EmailHandler) GenerateSummary(c *gin.Context) {
 	_ = h.repo.UpdateEmailSummary(c.Request.Context(), emailID, summary)
 
 	c.JSON(http.StatusOK, gin.H{"summary": summary})
+}
+
+func (h *EmailHandler) MarkAsSeen(c *gin.Context) {
+	emailID := c.Param("emailId")
+	
+	if err := h.repo.UpdateUserSeen(c.Request.Context(), emailID, true); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to mark email as seen", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Email marked as seen"})
 }

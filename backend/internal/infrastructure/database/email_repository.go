@@ -13,12 +13,13 @@ type EmailRepository interface {
 	SaveEmail(ctx context.Context, email *models.Email) error
 	EmailExists(ctx context.Context, accountID, senderEmail, subject string, receivedAt time.Time) (bool, error)
 	GetEmailsByAccount(ctx context.Context, accountID string, userID string, limit, offset int) ([]models.Email, error)
-	GetImportantEmails(ctx context.Context, userID string, limit int) ([]models.Email, error)
-	GetGlobalInbox(ctx context.Context, userID string, limit int) ([]models.Email, error)
+	GetImportantEmails(ctx context.Context, userID string, role string, limit int) ([]models.Email, error)
+	GetGlobalInbox(ctx context.Context, userID string, role string, limit int) ([]models.Email, error)
 	UpdateEmailStatus(ctx context.Context, emailID string, status string) error
 	GetEmailByID(ctx context.Context, emailID string) (*models.Email, error)
 	UpdateEmailSummary(ctx context.Context, emailID string, summary string) error
 	GetAlertEmails(ctx context.Context, since time.Time) ([]models.Email, error)
+	UpdateUserSeen(ctx context.Context, emailID string, seen bool) error
 }
 
 type emailRepository struct {
@@ -93,7 +94,7 @@ func (r *emailRepository) GetEmailsByAccount(ctx context.Context, accountID stri
 	return emails, err
 }
 
-func (r *emailRepository) GetImportantEmails(ctx context.Context, userID string, limit int) ([]models.Email, error) {
+func (r *emailRepository) GetImportantEmails(ctx context.Context, userID string, role string, limit int) ([]models.Email, error) {
 	var emails []models.Email
 	query := `SELECT e.*, COALESCE(NULLIF(a.account_name, ''), a.email_address) as monitored_account
 	          FROM emails e
@@ -109,8 +110,11 @@ func (r *emailRepository) GetImportantEmails(ctx context.Context, userID string,
 	          AND (e.status != 'Actioned' OR (e.status = 'Actioned' AND DATE(e.updated_at) = CURRENT_DATE))`
 	
 	args := []interface{}{}
-	if userID != "" {
+	if role == "Normal" {
 		query += ` AND a.user_id = $1`
+		args = append(args, userID)
+	} else {
+		query += ` AND (a.is_private = false OR a.user_id = $1)`
 		args = append(args, userID)
 	}
 	
@@ -121,15 +125,18 @@ func (r *emailRepository) GetImportantEmails(ctx context.Context, userID string,
 	return emails, err
 }
 
-func (r *emailRepository) GetGlobalInbox(ctx context.Context, userID string, limit int) ([]models.Email, error) {
+func (r *emailRepository) GetGlobalInbox(ctx context.Context, userID string, role string, limit int) ([]models.Email, error) {
 	var emails []models.Email
 	query := `SELECT e.*, COALESCE(NULLIF(a.account_name, ''), a.email_address) as monitored_account
 	          FROM emails e
 	          JOIN email_accounts a ON e.account_id = a.id`
 	
 	args := []interface{}{}
-	if userID != "" {
+	if role == "Normal" {
 		query += ` WHERE a.user_id = $1`
+		args = append(args, userID)
+	} else {
+		query += ` WHERE (a.is_private = false OR a.user_id = $1)`
 		args = append(args, userID)
 	}
 	
@@ -173,4 +180,10 @@ func (r *emailRepository) GetAlertEmails(ctx context.Context, since time.Time) (
 	`
 	err := r.db.SelectContext(ctx, &emails, query, since)
 	return emails, err
+}
+
+func (r *emailRepository) UpdateUserSeen(ctx context.Context, emailID string, seen bool) error {
+	query := `UPDATE emails SET user_seen = $1, updated_at = NOW() WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, seen, emailID)
+	return err
 }

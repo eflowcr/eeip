@@ -94,52 +94,91 @@
         </div>
 
         <!-- Toolbar de Filtros y Búsqueda -->
-        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl">
-          <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-5">
-            <div class="flex-1 relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-lg font-bold text-slate-300 cursor-pointer flex items-center" (click)="isFiltersCollapsed = !isFiltersCollapsed">
+              <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+              Filtros Avanzados
+            </h3>
+            <button (click)="isFiltersCollapsed = !isFiltersCollapsed" class="text-slate-400 hover:text-white transition-colors">
+              <svg *ngIf="isFiltersCollapsed" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+              <svg *ngIf="!isFiltersCollapsed" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+            </button>
+          </div>
+          
+          <div *ngIf="!isFiltersCollapsed" class="transition-all duration-300 origin-top pt-4 border-t border-white/10 mt-2">
+            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-5">
+              <div class="flex-1 relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+                <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por remitente o asunto..." class="w-full bg-slate-900/50 text-white border-white/10 rounded-xl py-3 pl-10 pr-4 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
               </div>
-              <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por remitente o asunto..." class="w-full bg-slate-900/50 text-white border-white/10 rounded-xl py-3 pl-10 pr-4 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+              <div class="sm:w-64 relative">
+                <select [(ngModel)]="selectedAccountFilter" class="w-full bg-slate-900/50 text-white border-white/10 rounded-xl py-3 px-4 appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                  <option value="">Todas las bandejas</option>
+                  <option *ngFor="let acc of uniqueMonitoredAccounts" [value]="acc">{{ acc }}</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </div>
             </div>
-            <div class="sm:w-64 relative">
-              <select [(ngModel)]="selectedAccountFilter" class="w-full bg-slate-900/50 text-white border-white/10 rounded-xl py-3 px-4 appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
-                <option value="">Todas las bandejas</option>
-                <option *ngFor="let acc of uniqueMonitoredAccounts" [value]="acc">{{ acc }}</option>
-              </select>
-              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            
+            <!-- Filtros Dinámicos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Filtros de Tono -->
+              <div *ngIf="activeTones.length > 0">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filtrar por Sentimiento Detectado:</h4>
+                <div class="flex flex-wrap gap-2">
+                  <button *ngFor="let tone of activeTones" 
+                          (click)="toggleToneFilter(tone)"
+                          class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 transform active:scale-95"
+                          [ngClass]="selectedToneFilter === tone ? 'bg-indigo-500 text-white border-indigo-400 shadow-lg shadow-indigo-500/50' : 'bg-slate-800/50 text-slate-300 border-white/10 hover:bg-slate-700 hover:text-white'">
+                    {{ tone }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Filtros de Prioridad -->
+              <div *ngIf="activePriorities.length > 0">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filtrar por Criticidad:</h4>
+                <div class="flex flex-wrap gap-2">
+                  <button *ngFor="let priority of activePriorities" 
+                          (click)="togglePriorityFilter(priority)"
+                          class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 transform active:scale-95"
+                          [ngClass]="selectedPriorityFilter === priority ? 'bg-fuchsia-600 text-white border-fuchsia-400 shadow-lg shadow-fuchsia-500/50' : 'bg-slate-800/50 text-slate-300 border-white/10 hover:bg-slate-700 hover:text-white'">
+                    {{ priority }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-          
-          <!-- Filtros Dinámicos -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Filtros de Tono -->
-            <div *ngIf="activeTones.length > 0">
-              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filtrar por Sentimiento Detectado:</h4>
-              <div class="flex flex-wrap gap-2">
-                <button *ngFor="let tone of activeTones" 
-                        (click)="toggleToneFilter(tone)"
-                        class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 transform active:scale-95"
-                        [ngClass]="selectedToneFilter === tone ? 'bg-indigo-500 text-white border-indigo-400 shadow-lg shadow-indigo-500/50' : 'bg-slate-800/50 text-slate-300 border-white/10 hover:bg-slate-700 hover:text-white'">
-                  {{ tone }}
-                </button>
-              </div>
-            </div>
+        </div>
 
-            <!-- Filtros de Prioridad -->
-            <div *ngIf="activePriorities.length > 0">
-              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filtrar por Criticidad:</h4>
-              <div class="flex flex-wrap gap-2">
-                <button *ngFor="let priority of activePriorities" 
-                        (click)="togglePriorityFilter(priority)"
-                        class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border transition-all duration-300 transform active:scale-95"
-                        [ngClass]="selectedPriorityFilter === priority ? 'bg-fuchsia-600 text-white border-fuchsia-400 shadow-lg shadow-fuchsia-500/50' : 'bg-slate-800/50 text-slate-300 border-white/10 hover:bg-slate-700 hover:text-white'">
-                  {{ priority }}
-                </button>
-              </div>
-            </div>
+        <!-- Chart: Urgency vs Emotion -->
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-white cursor-pointer" (click)="isQuantumChartCollapsed = !isQuantumChartCollapsed">Análisis Cuántico: Urgencia vs Emoción</h3>
+            <button (click)="isQuantumChartCollapsed = !isQuantumChartCollapsed" class="text-slate-400 hover:text-white transition-colors">
+              <svg *ngIf="isQuantumChartCollapsed" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+              <svg *ngIf="!isQuantumChartCollapsed" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+            </button>
+          </div>
+          <div *ngIf="!isQuantumChartCollapsed && dashboardChartOptions && dashboardChartOptions.series" class="transition-all duration-300 origin-top">
+            <apx-chart
+              [series]="dashboardChartOptions.series"
+              [chart]="dashboardChartOptions.chart!"
+              [colors]="dashboardChartOptions.colors!"
+              [plotOptions]="dashboardChartOptions.plotOptions!"
+              [dataLabels]="dashboardChartOptions.dataLabels!"
+              [stroke]="dashboardChartOptions.stroke!"
+              [xaxis]="dashboardChartOptions.xaxis!"
+              [yaxis]="dashboardChartOptions.yaxis!"
+              [legend]="dashboardChartOptions.legend!"
+              [grid]="dashboardChartOptions.grid!"
+              [tooltip]="dashboardChartOptions.tooltip!">
+            </apx-chart>
           </div>
         </div>
 
@@ -155,8 +194,8 @@
               </span>
               <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 py-1 px-3 rounded-full text-xs font-bold">{{ filteredPendingEmails.length }}</span>
             </h3>
-            <div class="space-y-4">
-              <div *ngIf="filteredPendingEmails.length === 0" class="text-center py-10">
+            <div [ngClass]="!canAudit ? 'grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-4'">
+              <div *ngIf="filteredPendingEmails.length === 0" class="text-center py-10 col-span-full">
                 <svg class="mx-auto h-12 w-12 text-slate-500 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/></svg>
                 <p class="text-sm text-slate-400 font-medium">Bandeja despejada</p>
               </div>
@@ -209,8 +248,13 @@
                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                   <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ email.monitored_account }}</span>
                   <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button (click)="markAsAuditing(email.id, $event)" class="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Auditar</button>
-                    <button (click)="markAsResolved(email.id, $event)" class="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Cerrar</button>
+                    <ng-container *ngIf="canAudit">
+                      <button (click)="markAsAuditing(email.id, $event)" class="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Auditar</button>
+                      <button (click)="markAsResolved(email.id, $event)" class="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Cerrar</button>
+                    </ng-container>
+                    <ng-container *ngIf="!canAudit">
+                      <button (click)="markAsSeen(email.id, $event)" class="bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 border border-indigo-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors shadow-lg shadow-indigo-500/20">Marcar como Visto</button>
+                    </ng-container>
                   </div>
                 </div>
               </div>
@@ -218,11 +262,11 @@
           </div>
 
           <!-- Columna 2: En Auditoría -->
-          <div class="flex-1 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-2xl min-w-[20rem]">
+          <div *ngIf="canAudit" class="flex-1 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-2xl min-w-[20rem]">
             <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center justify-between pb-3 border-b border-white/10">
               <span class="flex items-center">
                 <div class="w-2 h-2 rounded-full bg-blue-400 mr-2 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></div>
-                En Auditoría Especial
+                {{ canAudit ? 'En Auditoría Especial' : 'En Seguimiento' }}
               </span>
               <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 py-1 px-3 rounded-full text-xs font-bold">{{ filteredAuditingEmails.length }}</span>
             </h3>
@@ -278,7 +322,7 @@
                 
                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                   <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ email.monitored_account }}</span>
-                  <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity" *ngIf="canAudit">
                     <button (click)="markAsResolved(email.id, $event)" class="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 px-4 py-1.5 rounded-md text-xs font-bold transition-colors w-full shadow-lg">Finalizar Protocolo</button>
                   </div>
                 </div>
@@ -328,15 +372,21 @@
               </select>
             </div>
           </div>
+          
+          <!-- Loading Spinner -->
+          <div *ngIf="isLoadingInbox" class="flex flex-col items-center justify-center py-20">
+            <svg class="animate-spin h-10 w-10 text-indigo-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <p class="text-slate-400 font-medium tracking-wide">Desencriptando Bandeja Global...</p>
+          </div>
 
-          <div *ngIf="filteredInbox.length === 0" class="text-center py-10 rounded-lg border-2 border-dashed border-white/20">
+          <div *ngIf="!isLoadingInbox && filteredInbox.length === 0" class="text-center py-10 rounded-lg border-2 border-dashed border-white/20">
             <p class="text-sm text-slate-400">No se encontraron correos con los filtros actuales o no hay datos.</p>
           </div>
-          <div class="overflow-x-auto shadow ring-1 ring-white/10 rounded-xl" *ngIf="filteredInbox.length > 0">
+          <div class="overflow-x-auto shadow ring-1 ring-white/10 rounded-xl" *ngIf="!isLoadingInbox && filteredInbox.length > 0">
             <table class="min-w-full divide-y divide-white/10">
               <thead class="bg-slate-900/80">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-bold text-slate-200">Bandeja Auditada</th>
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-bold text-slate-200">Cuenta</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Remitente</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Asunto</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Categoría AI</th>
@@ -458,6 +508,24 @@
       <!-- Directorio y Seguimiento de Sentimiento -->
       <div *ngIf="activeTab === 'contacts'" class="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-2xl">
         <h2 class="text-2xl font-bold text-white mb-6">Directorio y Seguimiento de Sentimiento</h2>
+        
+        <div class="mb-8" *ngIf="stakeholdersChartOptions && stakeholdersChartOptions.series && contacts.length > 0">
+          <h3 class="text-xl font-bold text-white mb-4">Sentimientos por Stakeholder</h3>
+          <apx-chart
+            [series]="stakeholdersChartOptions.series"
+            [chart]="stakeholdersChartOptions.chart!"
+            [colors]="stakeholdersChartOptions.colors!"
+            [plotOptions]="stakeholdersChartOptions.plotOptions!"
+            [dataLabels]="stakeholdersChartOptions.dataLabels!"
+            [stroke]="stakeholdersChartOptions.stroke!"
+            [xaxis]="stakeholdersChartOptions.xaxis!"
+            [yaxis]="stakeholdersChartOptions.yaxis!"
+            [legend]="stakeholdersChartOptions.legend!"
+            [grid]="stakeholdersChartOptions.grid!"
+            [tooltip]="stakeholdersChartOptions.tooltip!">
+          </apx-chart>
+        </div>
+
         <div *ngIf="contacts.length === 0" class="text-center py-12 rounded-xl border-2 border-dashed border-white/20 bg-slate-900/30">
           <svg class="mx-auto h-16 w-16 text-indigo-500/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -553,6 +621,11 @@
                   <input type="password" name="password" [(ngModel)]="newAccount.imap_password" required class="block w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
                 </div>
 
+                <div class="flex items-center mt-2">
+                  <input type="checkbox" name="is_private" [(ngModel)]="newAccount.is_private" id="is_private_toggle" class="w-4 h-4 text-indigo-600 bg-slate-900/50 border-white/10 rounded focus:ring-indigo-500 focus:ring-2">
+                  <label for="is_private_toggle" class="ml-2 text-sm font-bold text-slate-300">Cuenta Privada (Oculta de análisis globales, solo visible para el dueño)</label>
+                </div>
+
                 <div *ngIf="accountSuccessMessage" class="mt-4 p-4 bg-emerald-500/20 text-emerald-300 text-sm font-bold rounded-xl border border-emerald-500/30">
                   {{ accountSuccessMessage }}
                 </div>
@@ -605,6 +678,9 @@
                       <div class="flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" *ngIf="acc.is_active">
                           Online
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30" *ngIf="acc.is_private">
+                          Privada
                         </span>
                         <button (click)="testExistingAccount(acc.id)" [disabled]="accountTestStatus[acc.id]?.loading || accountSyncStatus[acc.id]?.loading" class="text-slate-300 hover:text-white text-xs font-bold border border-white/20 rounded-lg px-3 py-1.5 bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50">
                           Ping

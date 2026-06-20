@@ -5,11 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from './auth.service';
 import { Login } from './login/login';
 import { environment } from '../environments/environment';
+import { ChartOptions } from './chart-types';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, Login],
+  imports: [CommonModule, FormsModule, Login, NgApexchartsModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -18,6 +20,14 @@ export class AppComponent implements OnInit {
   
   get isAdmin() {
     return this.authService.currentUser()?.role === 'Admin';
+  }
+
+  get isAuditor() {
+    return this.authService.currentUser()?.role === 'Auditor';
+  }
+
+  get canAudit() {
+    return this.isAdmin || this.isAuditor;
   }
 
   constructor() {
@@ -118,6 +128,12 @@ export class AppComponent implements OnInit {
   commitments: any[] = [];
   contacts: any[] = [];
   activeTab = 'dashboard';
+
+  // Charts
+  public isQuantumChartCollapsed = false;
+  public isFiltersCollapsed = false;
+  public dashboardChartOptions!: Partial<ChartOptions>;
+  public stakeholdersChartOptions!: Partial<ChartOptions>;
 
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
@@ -272,7 +288,7 @@ export class AppComponent implements OnInit {
           };
 
           this.importantEmails = data;
-          this.pendingEmails = data.filter(e => e.status === 'Unread' || e.status === 'Read' || !e.status);
+          this.pendingEmails = data.filter(e => (e.status === 'Unread' || e.status === 'Read' || !e.status) && (this.canAudit || !e.user_seen));
           this.auditingEmails = data.filter(e => e.status === 'Auditing');
           this.closedEmails = data.filter(e => e.status === 'Actioned' && isToday(e.updated_at));
           this.risks = data.filter(e => (e.customer_risk_score && e.customer_risk_score > 50) || (e.escalation_risk_score && e.escalation_risk_score > 50) || e.priority === 'Critical');
@@ -317,6 +333,8 @@ export class AppComponent implements OnInit {
             return contact;
           }).sort((a, b) => b.totalEmails - a.totalEmails);
 
+          this.initCharts();
+
           this.cdr.detectChanges();
         }
       },
@@ -330,16 +348,25 @@ export class AppComponent implements OnInit {
     return this.pendingEmails.filter(e => e.priority === 'Critical').length + this.auditingEmails.filter(e => e.priority === 'Critical').length;
   }
 
+  isLoadingInbox = false;
+
   loadInbox() {
+    this.isLoadingInbox = true;
+    this.cdr.detectChanges();
     this.http.get<any[]>(`${this.apiUrl}/emails/all?limit=100`).subscribe({
       next: (data) => {
+        this.isLoadingInbox = false;
         if (data) {
           this.inbox = data;
-          this.cdr.detectChanges();
+        } else {
+          this.inbox = [];
         }
+        this.cdr.detectChanges();
       },
       error: (err) => {
+        this.isLoadingInbox = false;
         console.error('Error cargando bandeja global', err);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -433,16 +460,20 @@ export class AppComponent implements OnInit {
       return; // Already generated
     }
     this.loadingSummaryId = email.id;
+    this.cdr.detectChanges();
+
     this.http.post<{summary: string}>(`${this.apiUrl}/emails/${email.id}/summary`, {}).subscribe({
       next: (res) => {
         email.summary = res.summary;
         this.loadingSummaryId = null;
+        this.importantEmails = [...this.importantEmails];
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error generating summary', err);
         email.summary = 'No se pudo generar el resumen en este momento.';
         this.loadingSummaryId = null;
+        this.importantEmails = [...this.importantEmails];
         this.cdr.detectChanges();
       }
     });
@@ -455,9 +486,25 @@ export class AppComponent implements OnInit {
         const email = this.importantEmails.find(e => e.id === emailId);
         if (email) email.status = 'Auditing';
         this.pendingEmails = this.pendingEmails.filter(e => e.id !== emailId);
-        if (email) this.auditingEmails.unshift(email);
+        if (email) this.auditingEmails = [email, ...this.auditingEmails];
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error marking as auditing', err)
+    });
+  }
+
+  markAsSeen(emailId: string, event: Event) {
+    event.stopPropagation();
+    this.http.put(`${this.apiUrl}/emails/${emailId}/seen`, {}).subscribe({
+      next: () => {
+        const email = this.importantEmails.find(e => e.id === emailId);
+        if (email) email.user_seen = true;
+        if (!this.canAudit) {
+          this.pendingEmails = this.pendingEmails.filter(e => e.id !== emailId);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error marking as seen', err)
     });
   }
 
@@ -469,7 +516,8 @@ export class AppComponent implements OnInit {
         if (email) email.status = 'Actioned';
         this.pendingEmails = this.pendingEmails.filter(e => e.id !== emailId);
         this.auditingEmails = this.auditingEmails.filter(e => e.id !== emailId);
-        if (email) this.closedEmails.unshift(email);
+        if (email) this.closedEmails = [email, ...this.closedEmails];
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error marking as resolved', err)
     });
@@ -501,7 +549,7 @@ export class AppComponent implements OnInit {
   }
 
   resetAccountForm() {
-    this.newAccount = { account_name: '', email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '' };
+    this.newAccount = { account_name: '', email_address: '', imap_host: '', imap_port: 993, imap_user: '', imap_password: '', is_private: false };
     this.editingAccountId = null;
   }
 
@@ -597,5 +645,80 @@ export class AppComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  initCharts() {
+    const priorities = ['Crítico', 'Alto', 'Medio', 'Bajo', 'Critical', 'High', 'Medium', 'Low'];
+    const pGroups = ['Crítico', 'Alto', 'Medio', 'Bajo'];
+    const tonesMap = new Map<string, number[]>();
+
+    const getPriorityGroupIdx = (p: string) => {
+      if (!p) return 3;
+      const lp = p.toLowerCase();
+      if (lp.includes('crític') || lp.includes('critic')) return 0;
+      if (lp.includes('alto') || lp.includes('high')) return 1;
+      if (lp.includes('medio') || lp.includes('medium')) return 2;
+      return 3;
+    };
+
+    this.importantEmails.forEach(e => {
+      const pIdx = getPriorityGroupIdx(e.priority);
+      const tone = e.detected_tone || 'Neutral';
+      if (!tonesMap.has(tone)) {
+        tonesMap.set(tone, [0, 0, 0, 0]);
+      }
+      tonesMap.get(tone)![pIdx]++;
+    });
+
+    const dashboardSeries = Array.from(tonesMap.entries()).map(([tone, data]) => ({
+      name: tone,
+      data: data
+    }));
+
+    this.dashboardChartOptions = {
+      series: dashboardSeries,
+      chart: { type: 'bar', height: 350, stacked: true, background: 'transparent', toolbar: { show: false }, dropShadow: { enabled: true, color: '#000', top: 0, left: 0, blur: 5, opacity: 0.3 } },
+      colors: ['#6366f1', '#10b981', '#d946ef', '#06b6d4', '#f59e0b', '#f43f5e'],
+      plotOptions: { bar: { horizontal: false, borderRadius: 4, columnWidth: '40%' } },
+      dataLabels: { enabled: false },
+      stroke: { width: 0, colors: ['transparent'] },
+      xaxis: { categories: pGroups, labels: { style: { colors: '#9ca3af' } } },
+      yaxis: { labels: { style: { colors: '#9ca3af' } } },
+      legend: { position: 'top', labels: { colors: '#9ca3af' } },
+      grid: { borderColor: '#374151', strokeDashArray: 4 },
+      tooltip: { theme: 'dark' }
+    };
+
+    const stkTonesMap = new Map<string, number[]>();
+    const stakeholderNames = this.contacts.slice(0, 10).map(c => c.email);
+
+    this.contacts.slice(0, 10).forEach((c, idx) => {
+      c.topTones.forEach((t: any) => {
+        const tone = t.tone;
+        if (!stkTonesMap.has(tone)) {
+          stkTonesMap.set(tone, Array(10).fill(0));
+        }
+        stkTonesMap.get(tone)![idx] = t.count;
+      });
+    });
+
+    const stakeholdersSeries = Array.from(stkTonesMap.entries()).map(([tone, data]) => ({
+      name: tone,
+      data: data.slice(0, stakeholderNames.length)
+    }));
+
+    this.stakeholdersChartOptions = {
+      series: stakeholdersSeries,
+      chart: { type: 'bar', height: 350, stacked: true, background: 'transparent', toolbar: { show: false }, dropShadow: { enabled: true, color: '#000', top: 0, left: 0, blur: 5, opacity: 0.3 } },
+      colors: ['#06b6d4', '#d946ef', '#10b981', '#6366f1', '#f59e0b', '#f43f5e'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '50%' } },
+      dataLabels: { enabled: false },
+      stroke: { width: 0, colors: ['transparent'] },
+      xaxis: { categories: stakeholderNames, labels: { style: { colors: '#9ca3af' } } },
+      yaxis: { labels: { style: { colors: '#9ca3af' } } },
+      legend: { position: 'top', labels: { colors: '#9ca3af' } },
+      grid: { borderColor: '#374151', strokeDashArray: 4 },
+      tooltip: { theme: 'dark' }
+    };
   }
 }
