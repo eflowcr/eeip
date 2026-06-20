@@ -157,6 +157,46 @@ export class AppComponent implements OnInit {
           this.closedEmails = data.filter(e => e.status === 'Actioned' && isToday(e.updated_at));
           this.risks = data.filter(e => (e.customer_risk_score && e.customer_risk_score > 50) || (e.escalation_risk_score && e.escalation_risk_score > 50) || e.priority === 'Critical');
           this.commitments = data.filter(e => e.requires_action === true);
+
+          const contactsMap = new Map<string, any>();
+          this.importantEmails.forEach(e => {
+            if (!e.sender_email) return;
+            const sender = e.sender_email;
+            if (!contactsMap.has(sender)) {
+              contactsMap.set(sender, {
+                email: sender,
+                totalEmails: 0,
+                toneCounts: {} as { [key: string]: number },
+                predominantTone: 'Neutral',
+                lastContactAt: e.received_at
+              });
+            }
+            const contact = contactsMap.get(sender);
+            contact.totalEmails++;
+            const tone = e.detected_tone || 'Neutral';
+            contact.toneCounts[tone] = (contact.toneCounts[tone] || 0) + 1;
+            if (new Date(e.received_at) > new Date(contact.lastContactAt)) {
+              contact.lastContactAt = e.received_at;
+            }
+          });
+
+          this.contacts = Array.from(contactsMap.values()).map(contact => {
+            let maxCount = 0;
+            let predTone = 'Neutral';
+            for (const [tone, count] of Object.entries(contact.toneCounts)) {
+              if ((count as number) > maxCount) {
+                maxCount = count as number;
+                predTone = tone;
+              }
+            }
+            contact.predominantTone = predTone;
+            // Also store array of tones for the UI to loop over
+            contact.topTones = Object.entries(contact.toneCounts)
+              .map(([t, c]) => ({ tone: t, count: c }))
+              .sort((a, b) => (b.count as number) - (a.count as number));
+            return contact;
+          }).sort((a, b) => b.totalEmails - a.totalEmails);
+
           this.cdr.detectChanges();
         }
       },

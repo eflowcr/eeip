@@ -393,15 +393,55 @@
         </div>
       </div>
 
-      <!-- Contactos (En construcción) -->
+      <!-- Directorio y Seguimiento de Sentimiento -->
       <div *ngIf="activeTab === 'contacts'" class="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-2xl">
         <h2 class="text-2xl font-bold text-white mb-6">Directorio y Seguimiento de Sentimiento</h2>
-        <div class="text-center py-12 rounded-xl border-2 border-dashed border-white/20 bg-slate-900/30">
+        <div *ngIf="contacts.length === 0" class="text-center py-12 rounded-xl border-2 border-dashed border-white/20 bg-slate-900/30">
           <svg class="mx-auto h-16 w-16 text-indigo-500/50 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
-          <h3 class="text-lg font-bold text-white">Módulo en Construcción</h3>
-          <p class="mt-2 text-sm text-slate-400 max-w-sm mx-auto">Nuestro equipo de IA está calibrando los modelos predictivos para esta sección.</p>
+          <h3 class="text-lg font-bold text-white">Sin Contactos</h3>
+          <p class="mt-2 text-sm text-slate-400 max-w-sm mx-auto">Aún no hay suficientes correos analizados para generar estadísticas de sentimiento por contacto.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" *ngIf="contacts.length > 0">
+          <div *ngFor="let contact of contacts" class="p-5 rounded-2xl bg-slate-800/50 border border-white/10 shadow-lg relative group transition-all hover:bg-slate-800">
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
+                  {{ contact.email.substring(0, 2).toUpperCase() }}
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-white w-48 truncate" [title]="contact.email">{{ contact.email }}</h4>
+                  <p class="text-xs text-slate-400 font-medium">{{ contact.totalEmails }} correos analizados</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-black/20 p-4 rounded-xl border border-white/5 mb-4">
+              <span class="block text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-2">Tono Predominante:</span>
+              <div class="flex items-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider" 
+                      [ngClass]="contact.predominantTone === 'Agresivo/violento' || contact.predominantTone === 'Amenazante' || contact.predominantTone === 'Confrontativo' || contact.predominantTone === 'Frustrado' ? 'bg-red-500/20 text-red-300 border border-red-500/30' : (contact.predominantTone === 'Optimista' || contact.predominantTone === 'Profesional' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30')">
+                  {{ contact.predominantTone }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="space-y-2">
+              <span class="block text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Distribución Histórica:</span>
+              <div *ngFor="let t of contact.topTones" class="flex items-center text-xs">
+                <span class="w-24 truncate text-slate-300 font-medium">{{ t.tone }}</span>
+                <div class="flex-1 ml-2 bg-slate-900/50 rounded-full h-2 overflow-hidden border border-white/5">
+                  <div class="h-full rounded-full" 
+                       [style.width]="(t.count / contact.totalEmails * 100) + '%'"
+                       [ngClass]="t.tone === 'Agresivo/violento' || t.tone === 'Amenazante' || t.tone === 'Confrontativo' || t.tone === 'Frustrado' ? 'bg-red-500' : (t.tone === 'Optimista' || t.tone === 'Profesional' ? 'bg-emerald-500' : 'bg-indigo-500')">
+                  </div>
+                </div>
+                <span class="ml-3 w-8 text-right text-slate-400 font-mono">{{ t.count }}</span>
+              </div>
+            </div>
+            
+          </div>
         </div>
       </div>
 
