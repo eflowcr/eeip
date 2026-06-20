@@ -194,8 +194,8 @@
               </span>
               <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 py-1 px-3 rounded-full text-xs font-bold">{{ filteredPendingEmails.length }}</span>
             </h3>
-            <div class="space-y-4">
-              <div *ngIf="filteredPendingEmails.length === 0" class="text-center py-10">
+            <div [ngClass]="!canAudit ? 'grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-4'">
+              <div *ngIf="filteredPendingEmails.length === 0" class="text-center py-10 col-span-full">
                 <svg class="mx-auto h-12 w-12 text-slate-500 mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/></svg>
                 <p class="text-sm text-slate-400 font-medium">Bandeja despejada</p>
               </div>
