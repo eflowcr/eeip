@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/emersion/go-imap"
@@ -159,6 +160,11 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 				isReplied = true
 				break
 			}
+		}
+
+		// Prevent infinite loops: Do not process emails that are EEIP alerts
+		if strings.Contains(subject, "Alerta Crítica EEIP") || strings.Contains(subject, "Alerta Acción Requerida EEIP") {
+			continue
 		}
 
 		email := &models.Email{
