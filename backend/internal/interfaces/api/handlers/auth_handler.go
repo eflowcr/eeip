@@ -33,7 +33,6 @@ type LoginRequest struct {
 type RegisterRequest struct {
 	Email        string `json:"email" binding:"required"`
 	Password     string `json:"password" binding:"required"`
-	Role         string `json:"role" binding:"required"` // Admin, Auditor, Normal
 	AccountName  string `json:"account_name" binding:"required"`
 	IMAPHost     string `json:"imap_host" binding:"required"`
 	IMAPPort     int    `json:"imap_port" binding:"required"`
@@ -106,11 +105,16 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// 3. Create User
+	// 3. Create User with forced roles
+	role := "Normal"
+	if req.Email == "eitel.rodriguez@eprac.com" || req.Email == "admin@eeip.com" {
+		role = "Admin"
+	}
+
 	user := &database.User{
 		Email:        req.Email,
 		PasswordHash: string(hashedPassword),
-		Role:         req.Role,
+		Role:         role,
 	}
 
 	if err := h.userRepo.CreateUser(c.Request.Context(), user); err != nil {

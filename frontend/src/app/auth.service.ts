@@ -29,6 +29,10 @@ export class AuthService {
       })
     );
   }
+
+  register(data: any) {
+    return this.http.post(`${this.apiUrl}/register`, data);
+  }
   
   logout() {
     localStorage.removeItem('eeip_token');
