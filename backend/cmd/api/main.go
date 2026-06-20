@@ -102,6 +102,7 @@ func main() {
 	jwtSecret := getEnv("JWT_SECRET", "super-secret-key")
 	tokenManager := auth.NewJWTManager(jwtSecret, 24*time.Hour)
 	authHandler := handlers.NewAuthHandler(userRepo, accountRepo, tokenManager, emailCollector)
+	userHandler := handlers.NewUserHandler(userRepo)
 
 	api := router.Group("/api/v1")
 	{
@@ -143,6 +144,10 @@ func main() {
 				
 				adminOnly.POST("/stakeholders", stakeholderHandler.CreateStakeholder)
 				adminOnly.DELETE("/stakeholders/:id", stakeholderHandler.DeleteStakeholder)
+				
+				// Admin only user management
+				adminOnly.GET("/users", userHandler.GetUsers)
+				adminOnly.PUT("/users/:userId/role", userHandler.UpdateRole)
 			}
 		}
 	}

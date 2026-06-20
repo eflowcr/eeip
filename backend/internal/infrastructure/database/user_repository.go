@@ -20,6 +20,7 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user *User) error
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetAllUsers(ctx context.Context) ([]User, error)
+	UpdateUserRole(ctx context.Context, userID, role string) error
 }
 
 type userRepository struct {
@@ -48,4 +49,10 @@ func (r *userRepository) GetAllUsers(ctx context.Context) ([]User, error) {
 	query := `SELECT * FROM users ORDER BY created_at DESC`
 	err := r.db.SelectContext(ctx, &users, query)
 	return users, err
+}
+
+func (r *userRepository) UpdateUserRole(ctx context.Context, userID, role string) error {
+	query := `UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2`
+	_, err := r.db.ExecContext(ctx, query, role, userID)
+	return err
 }

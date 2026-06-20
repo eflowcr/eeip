@@ -26,6 +26,7 @@ export class AppComponent implements OnInit {
         if (this.isAdmin) {
           this.loadAccounts();
           this.loadStakeholders();
+          this.loadUsers();
         }
       }
     });
@@ -149,6 +150,9 @@ export class AppComponent implements OnInit {
   };
   isSavingStakeholder = false;
 
+  // Usuarios
+  users: any[] = [];
+
   ngOnInit() {
     this.inbox = [];
     this.risks = [];
@@ -180,6 +184,34 @@ export class AppComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cargando interesados', err);
+      }
+    });
+  }
+
+  loadUsers() {
+    this.http.get<any[]>(`${this.apiUrl}/users`).subscribe({
+      next: (data) => {
+        if (data) {
+          this.users = data;
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando usuarios', err);
+      }
+    });
+  }
+
+  updateUserRole(user: any, newRole: string) {
+    this.http.put(`${this.apiUrl}/users/${user.id}/role`, { role: newRole }).subscribe({
+      next: () => {
+        user.role = newRole;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error actualizando rol de usuario', err);
+        // Refresh users to revert the select box if it failed
+        this.loadUsers();
       }
     });
   }
