@@ -76,7 +76,13 @@ func (r *emailRepository) GetImportantEmails(ctx context.Context, limit int) ([]
 	query := `SELECT e.*, COALESCE(NULLIF(a.account_name, ''), a.email_address) as monitored_account
 	          FROM emails e
 	          JOIN email_accounts a ON e.account_id = a.id
-	          WHERE (e.priority IN ('Critical', 'High') OR e.requires_action = true)
+	          WHERE (
+	              e.priority IN ('Critical', 'High', 'Crítico', 'Alto') 
+	              OR e.requires_action = true 
+	              OR e.sentiment IN ('Insatisfecho', 'Molesto', 'Frustrado', 'Preocupado', 'Critico', 'Escalado', 'Amenazante', 'Agresivo/violento', 'Peligro')
+	              OR e.customer_risk_score > 50
+	              OR e.escalation_risk_score > 50
+	          )
 	          AND e.category NOT IN ('Ruido', 'Informativo')
 	          AND (e.status != 'Actioned' OR (e.status = 'Actioned' AND DATE(e.updated_at) = CURRENT_DATE))
 	          ORDER BY e.received_at DESC LIMIT $1`
