@@ -92,7 +92,7 @@ func main() {
 	emailCollector := services.NewEmailCollector(emailRepo, aiEngine, stakeholderRepo, telegramSvc, mailerSvc)
 	summaryEngine := services.NewSummaryEngine(openAIKey)
 	
-	cronService := services.NewCronService(emailRepo, accountRepo, stakeholderRepo, telegramSvc, mailerSvc)
+	cronService := services.NewCronService(emailRepo, accountRepo, stakeholderRepo, telegramSvc, mailerSvc, emailCollector)
 	cronService.Start()
 
 	// Handlers
