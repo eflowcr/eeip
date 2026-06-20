@@ -441,16 +441,20 @@ export class AppComponent implements OnInit {
       return; // Already generated
     }
     this.loadingSummaryId = email.id;
+    this.cdr.detectChanges();
+
     this.http.post<{summary: string}>(`${this.apiUrl}/emails/${email.id}/summary`, {}).subscribe({
       next: (res) => {
         email.summary = res.summary;
         this.loadingSummaryId = null;
+        this.importantEmails = [...this.importantEmails];
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error generating summary', err);
         email.summary = 'No se pudo generar el resumen en este momento.';
         this.loadingSummaryId = null;
+        this.importantEmails = [...this.importantEmails];
         this.cdr.detectChanges();
       }
     });
@@ -463,7 +467,8 @@ export class AppComponent implements OnInit {
         const email = this.importantEmails.find(e => e.id === emailId);
         if (email) email.status = 'Auditing';
         this.pendingEmails = this.pendingEmails.filter(e => e.id !== emailId);
-        if (email) this.auditingEmails.unshift(email);
+        if (email) this.auditingEmails = [email, ...this.auditingEmails];
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error marking as auditing', err)
     });
@@ -477,7 +482,8 @@ export class AppComponent implements OnInit {
         if (email) email.status = 'Actioned';
         this.pendingEmails = this.pendingEmails.filter(e => e.id !== emailId);
         this.auditingEmails = this.auditingEmails.filter(e => e.id !== emailId);
-        if (email) this.closedEmails.unshift(email);
+        if (email) this.closedEmails = [email, ...this.closedEmails];
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error marking as resolved', err)
     });
