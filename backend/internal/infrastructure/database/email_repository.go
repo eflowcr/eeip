@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/eprac/eeip-backend/internal/domain/models"
@@ -11,9 +12,9 @@ import (
 type EmailRepository interface {
 	SaveEmail(ctx context.Context, email *models.Email) error
 	EmailExists(ctx context.Context, accountID, senderEmail, subject string, receivedAt time.Time) (bool, error)
-	GetEmailsByAccount(ctx context.Context, accountID string, limit, offset int) ([]models.Email, error)
-	GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error)
-	GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error)
+	GetEmailsByAccount(ctx context.Context, accountID string, userID string, limit, offset int) ([]models.Email, error)
+	GetImportantEmails(ctx context.Context, userID string, limit int) ([]models.Email, error)
+	GetGlobalInbox(ctx context.Context, userID string, limit int) ([]models.Email, error)
 	UpdateEmailStatus(ctx context.Context, emailID string, status string) error
 	GetEmailByID(ctx context.Context, emailID string) (*models.Email, error)
 	UpdateEmailSummary(ctx context.Context, emailID string, summary string) error
@@ -75,14 +76,24 @@ func (r *emailRepository) EmailExists(ctx context.Context, accountID, senderEmai
 	return exists, err
 }
 
-func (r *emailRepository) GetEmailsByAccount(ctx context.Context, accountID string, limit, offset int) ([]models.Email, error) {
+func (r *emailRepository) GetEmailsByAccount(ctx context.Context, accountID string, userID string, limit, offset int) ([]models.Email, error) {
 	var emails []models.Email
-	query := `SELECT * FROM emails WHERE account_id = $1 ORDER BY received_at DESC LIMIT $2 OFFSET $3`
-	err := r.db.SelectContext(ctx, &emails, query, accountID, limit, offset)
+	query := `SELECT e.* FROM emails e JOIN email_accounts a ON e.account_id = a.id WHERE e.account_id = $1`
+	args := []interface{}{accountID}
+	
+	if userID != "" {
+		query += ` AND a.user_id = $2`
+		args = append(args, userID)
+	}
+	
+	query += ` ORDER BY e.received_at DESC LIMIT $` + fmt.Sprintf("%d", len(args)+1) + ` OFFSET $` + fmt.Sprintf("%d", len(args)+2)
+	args = append(args, limit, offset)
+	
+	err := r.db.SelectContext(ctx, &emails, query, args...)
 	return emails, err
 }
 
-func (r *emailRepository) GetImportantEmails(ctx context.Context, limit int) ([]models.Email, error) {
+func (r *emailRepository) GetImportantEmails(ctx context.Context, userID string, limit int) ([]models.Email, error) {
 	var emails []models.Email
 	query := `SELECT e.*, COALESCE(NULLIF(a.account_name, ''), a.email_address) as monitored_account
 	          FROM emails e
@@ -95,19 +106,37 @@ func (r *emailRepository) GetImportantEmails(ctx context.Context, limit int) ([]
 	              OR e.escalation_risk_score > 50
 	          )
 	          AND e.category NOT IN ('Ruido', 'Informativo')
-	          AND (e.status != 'Actioned' OR (e.status = 'Actioned' AND DATE(e.updated_at) = CURRENT_DATE))
-	          ORDER BY e.received_at DESC LIMIT $1`
-	err := r.db.SelectContext(ctx, &emails, query, limit)
+	          AND (e.status != 'Actioned' OR (e.status = 'Actioned' AND DATE(e.updated_at) = CURRENT_DATE))`
+	
+	args := []interface{}{}
+	if userID != "" {
+		query += ` AND a.user_id = $1`
+		args = append(args, userID)
+	}
+	
+	query += ` ORDER BY e.received_at DESC LIMIT $` + fmt.Sprintf("%d", len(args)+1)
+	args = append(args, limit)
+	
+	err := r.db.SelectContext(ctx, &emails, query, args...)
 	return emails, err
 }
 
-func (r *emailRepository) GetGlobalInbox(ctx context.Context, limit int) ([]models.Email, error) {
+func (r *emailRepository) GetGlobalInbox(ctx context.Context, userID string, limit int) ([]models.Email, error) {
 	var emails []models.Email
 	query := `SELECT e.*, COALESCE(NULLIF(a.account_name, ''), a.email_address) as monitored_account
 	          FROM emails e
-	          JOIN email_accounts a ON e.account_id = a.id
-	          ORDER BY e.received_at DESC LIMIT $1`
-	err := r.db.SelectContext(ctx, &emails, query, limit)
+	          JOIN email_accounts a ON e.account_id = a.id`
+	
+	args := []interface{}{}
+	if userID != "" {
+		query += ` WHERE a.user_id = $1`
+		args = append(args, userID)
+	}
+	
+	query += ` ORDER BY e.received_at DESC LIMIT $` + fmt.Sprintf("%d", len(args)+1)
+	args = append(args, limit)
+	
+	err := r.db.SelectContext(ctx, &emails, query, args...)
 	return emails, err
 }
 

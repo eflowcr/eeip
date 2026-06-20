@@ -26,7 +26,14 @@ func (h *EmailHandler) GetImportantEmails(c *gin.Context) {
 		return
 	}
 
-	emails, err := h.repo.GetImportantEmails(c.Request.Context(), limit)
+	var filterUserID string
+	if role, ok := c.Get("userRole"); ok && role == "Normal" {
+		if uid, ok := c.Get("userID"); ok {
+			filterUserID = uid.(string)
+		}
+	}
+
+	emails, err := h.repo.GetImportantEmails(c.Request.Context(), filterUserID, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch emails", "details": err.Error()})
 		return
@@ -43,7 +50,14 @@ func (h *EmailHandler) GetGlobalInbox(c *gin.Context) {
 		return
 	}
 
-	emails, err := h.repo.GetGlobalInbox(c.Request.Context(), limit)
+	var filterUserID string
+	if role, ok := c.Get("userRole"); ok && role == "Normal" {
+		if uid, ok := c.Get("userID"); ok {
+			filterUserID = uid.(string)
+		}
+	}
+
+	emails, err := h.repo.GetGlobalInbox(c.Request.Context(), filterUserID, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch emails", "details": err.Error()})
 		return
@@ -60,7 +74,14 @@ func (h *EmailHandler) GetEmailsByAccount(c *gin.Context) {
 	limit, _ := strconv.Atoi(limitStr)
 	offset, _ := strconv.Atoi(offsetStr)
 
-	emails, err := h.repo.GetEmailsByAccount(c.Request.Context(), accountID, limit, offset)
+	var filterUserID string
+	if role, ok := c.Get("userRole"); ok && role == "Normal" {
+		if uid, ok := c.Get("userID"); ok {
+			filterUserID = uid.(string)
+		}
+	}
+
+	emails, err := h.repo.GetEmailsByAccount(c.Request.Context(), accountID, filterUserID, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch emails", "details": err.Error()})
 		return

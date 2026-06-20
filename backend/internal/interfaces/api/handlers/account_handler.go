@@ -28,8 +28,14 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	// Hardcode the default user ID for MVP
-	req.UserID = "00000000-0000-0000-0000-000000000001"
+	// Set user ID from context if not provided
+	if req.UserID == "" {
+		if uid, exists := c.Get("userID"); exists {
+			req.UserID = uid.(string)
+		} else {
+			req.UserID = "00000000-0000-0000-0000-000000000001" // Ultimate fallback
+		}
+	}
 
 	if err := h.repo.CreateAccount(c.Request.Context(), &req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create account", "details": err.Error()})
@@ -40,7 +46,16 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 }
 
 func (h *AccountHandler) GetAccounts(c *gin.Context) {
-	accounts, err := h.repo.GetAccounts(c.Request.Context())
+	var accounts []models.EmailAccount
+	var err error
+
+	if role, ok := c.Get("userRole"); ok && role == "Normal" {
+		userID := c.MustGet("userID").(string)
+		accounts, err = h.repo.GetAccountsByUser(c.Request.Context(), userID)
+	} else {
+		accounts, err = h.repo.GetAccounts(c.Request.Context())
+	}
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get accounts", "details": err.Error()})
 		return

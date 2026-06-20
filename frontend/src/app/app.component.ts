@@ -1,16 +1,41 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from './auth.service';
+import { Login } from './login/login';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Login],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  authService = inject(AuthService);
+  
+  get isAdmin() {
+    return this.authService.currentUser()?.role === 'Admin';
+  }
+
+  constructor() {
+    effect(() => {
+      if (this.authService.currentUser()) {
+        this.loadImportantEmails();
+        if (this.isAdmin) {
+          this.loadAccounts();
+          this.loadStakeholders();
+        }
+      }
+    });
+  }
+
+  logout() {
+    this.authService.logout();
+    this.activeTab = 'dashboard';
+  }
+
   title = 'EEIP - Plataforma de Inteligencia Ejecutiva';
   importantEmails: any[] = [];
   pendingEmails: any[] = [];
@@ -125,9 +150,6 @@ export class AppComponent implements OnInit {
   isSavingStakeholder = false;
 
   ngOnInit() {
-    this.loadImportantEmails();
-    this.loadAccounts();
-    this.loadStakeholders();
     this.inbox = [];
     this.risks = [];
     this.commitments = [];
