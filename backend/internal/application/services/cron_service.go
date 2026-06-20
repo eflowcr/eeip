@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/eprac/eeip-backend/internal/domain/models"
 	"github.com/eprac/eeip-backend/internal/infrastructure/database"
 	"github.com/robfig/cron/v3"
 )
@@ -18,19 +19,23 @@ type CronService interface {
 type cronService struct {
 	cronInst     *cron.Cron
 	emailRepo    database.EmailRepository
+	accRepo      database.AccountRepository
 	stakeholders *database.StakeholderRepository
 	telegramSvc  TelegramService
+	mailerSvc    MailerService
 }
 
-func NewCronService(emailRepo database.EmailRepository, stakeholders *database.StakeholderRepository, telegramSvc TelegramService) CronService {
+func NewCronService(emailRepo database.EmailRepository, accRepo database.AccountRepository, stakeholders *database.StakeholderRepository, telegramSvc TelegramService, mailerSvc MailerService) CronService {
 	// Create cron with standard parser and local timezone
 	c := cron.New(cron.WithLocation(time.Local))
 	
 	s := &cronService{
 		cronInst:     c,
 		emailRepo:    emailRepo,
+		accRepo:      accRepo,
 		stakeholders: stakeholders,
 		telegramSvc:  telegramSvc,
+		mailerSvc:    mailerSvc,
 	}
 
 	// Run at 08:00, 11:00, 14:00, 17:00 every day
@@ -79,29 +84,56 @@ func (s *cronService) runAlertsJob() {
 	// Build summary message
 	msg := fmt.Sprintf("📊 <b>RESUMEN EJECUTIVO (Últimas 3 horas)</b>\nSe encontraron <b>%d</b> correos de alto riesgo que requieren tu atención:\n\n", len(emails))
 	
+	var summary string
 	for i, em := range emails {
 		if i >= 5 {
 			msg += fmt.Sprintf("\n...y %d más. Revisa la plataforma para más detalles.", len(emails)-5)
+			summary += "<li>...y más correos. Revisa la plataforma.</li>"
 			break
 		}
-		
 		priority := "N/A"
 		if em.Priority != nil { priority = *em.Priority }
-		
-		msg += fmt.Sprintf("🔹 <b>[%s]</b> %s (De: %s)\n", priority, *em.Subject, em.SenderEmail)
+		summary += fmt.Sprintf("<li><b>[%s]</b> %s (De: %s)</li>", priority, *em.Subject, em.SenderEmail)
 	}
+	
+	msg = fmt.Sprintf("🚨 <b>RESUMEN 3H: CORREOS CRÍTICOS</b>\n\nSe han detectado %d correos críticos en las últimas 3 horas.\n\n%s", len(emails), summary)
+	
+	htmlMsg := fmt.Sprintf("<h2>🚨 RESUMEN 3H: CORREOS CRÍTICOS</h2><p>Se han detectado %d correos críticos en las últimas 3 horas.</p><ul>%s</ul>", len(emails), summary)
 
-	msg += "\n\n🌐 <a href=\"http://localhost:4200\">Abrir EEIP Global Inbox</a>"
 
-	// Broadcast
+	var emailRecipients []string
 	for _, sh := range shs {
 		if sh.TelegramChatID != "" {
 			err := s.telegramSvc.SendMessage(sh.TelegramChatID, msg)
 			if err != nil {
 				log.Printf("Failed to send cron telegram to %s: %v", sh.Name, err)
-			} else {
-				log.Printf("Sent cron telegram alert to %s", sh.Name)
 			}
+		}
+		if sh.Email != "" {
+			emailRecipients = append(emailRecipients, sh.Email)
+		}
+	}
+
+	if len(emailRecipients) > 0 {
+		// Fetch an account to send the email from
+		accounts, err := s.accRepo.GetAccounts(ctx)
+		if err == nil && len(accounts) > 0 {
+			var acc models.EmailAccount
+			for _, a := range accounts {
+				if a.EmailAddress == "eitel.rodriguez@eprac.com" {
+					acc = a
+					break
+				}
+			}
+			if acc.ID == "" {
+				acc = accounts[0]
+			}
+			
+			smtpPort := 587
+			if acc.IMAPPort == 993 {
+				smtpPort = 465
+			}
+			s.mailerSvc.SendEmailAlert(emailRecipients, "🚨 Resumen de Correos Críticos EEIP", htmlMsg, acc.IMAPHost, smtpPort, acc.IMAPUser, acc.IMAPPassword)
 		}
 	}
 }

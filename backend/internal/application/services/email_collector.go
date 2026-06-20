@@ -25,10 +25,11 @@ type emailCollector struct {
 	aiEngine     AIClassificationEngine
 	stakeholders *database.StakeholderRepository
 	telegramSvc  TelegramService
+	mailerSvc    MailerService
 }
 
-func NewEmailCollector(repo database.EmailRepository, aiEngine AIClassificationEngine, stakeholders *database.StakeholderRepository, telegramSvc TelegramService) EmailCollector {
-	return &emailCollector{repo: repo, aiEngine: aiEngine, stakeholders: stakeholders, telegramSvc: telegramSvc}
+func NewEmailCollector(repo database.EmailRepository, aiEngine AIClassificationEngine, stakeholders *database.StakeholderRepository, telegramSvc TelegramService, mailerSvc MailerService) EmailCollector {
+	return &emailCollector{repo: repo, aiEngine: aiEngine, stakeholders: stakeholders, telegramSvc: telegramSvc, mailerSvc: mailerSvc}
 }
 
 func (s *emailCollector) CollectEmails(ctx context.Context, account *models.EmailAccount) error {
@@ -186,7 +187,7 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 			
 			// Alert logic for critical emails
 			if email.Priority != nil && (*email.Priority == "Crítico" || *email.Priority == "Critical") {
-				go s.triggerAlerts(email)
+				go s.triggerAlerts(email, account)
 			}
 		}
 	}
@@ -203,7 +204,7 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 	return nil
 }
 
-func (s *emailCollector) triggerAlerts(email *models.Email) {
+func (s *emailCollector) triggerAlerts(email *models.Email, account *models.EmailAccount) {
 	shs, err := s.stakeholders.GetAll()
 	if err != nil {
 		log.Printf("Failed to get stakeholders for alert: %v", err)
@@ -220,6 +221,7 @@ func (s *emailCollector) triggerAlerts(email *models.Email) {
 	msg := fmt.Sprintf("🚨 <b>NUEVO CORREO CRÍTICO</b>\n\n<b>De:</b> %s\n<b>Asunto:</b> %s\n<b>Acción Recomendada:</b> %s\n<b>Explicación:</b> %s",
 		email.SenderEmail, subject, action, explanation)
 
+	var emailRecipients []string
 	for _, sh := range shs {
 		if sh.TelegramChatID != "" {
 			err := s.telegramSvc.SendMessage(sh.TelegramChatID, msg)
@@ -228,6 +230,28 @@ func (s *emailCollector) triggerAlerts(email *models.Email) {
 			} else {
 				log.Printf("Sent telegram alert to %s", sh.Name)
 			}
+		}
+		if sh.Email != "" {
+			emailRecipients = append(emailRecipients, sh.Email)
+		}
+	}
+
+	if len(emailRecipients) > 0 {
+		htmlMsg := fmt.Sprintf(`<h2>🚨 NUEVO CORREO CRÍTICO</h2>
+<p><b>De:</b> %s</p>
+<p><b>Asunto:</b> %s</p>
+<p><b>Acción Recomendada:</b> %s</p>
+<p><b>Explicación:</b> %s</p>
+<p><a href="http://localhost:4200">Ver en EEIP</a></p>`, email.SenderEmail, subject, action, explanation)
+		
+		smtpPort := 587
+		if account.IMAPPort == 993 {
+			smtpPort = 465 // Using 465 for SSL instead of 587 if IMAP uses 993
+		}
+		
+		err := s.mailerSvc.SendEmailAlert(emailRecipients, "🚨 Alerta Crítica EEIP: "+subject, htmlMsg, account.IMAPHost, smtpPort, account.IMAPUser, account.IMAPPassword)
+		if err != nil {
+			log.Printf("Failed to send email alert: %v", err)
 		}
 	}
 }

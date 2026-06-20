@@ -82,10 +82,11 @@ func main() {
 	}
 	telegramToken := getEnv("TELEGRAM_BOT_TOKEN", "")
 	telegramSvc := services.NewTelegramService(telegramToken)
-	emailCollector := services.NewEmailCollector(emailRepo, aiEngine, stakeholderRepo, telegramSvc)
+	mailerSvc := services.NewMailerService()
+	emailCollector := services.NewEmailCollector(emailRepo, aiEngine, stakeholderRepo, telegramSvc, mailerSvc)
 	summaryEngine := services.NewSummaryEngine(openAIKey)
 	
-	cronService := services.NewCronService(emailRepo, stakeholderRepo, telegramSvc)
+	cronService := services.NewCronService(emailRepo, accountRepo, stakeholderRepo, telegramSvc, mailerSvc)
 	cronService.Start()
 
 	// Handlers
