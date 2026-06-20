@@ -98,7 +98,7 @@ func main() {
 	stakeholderHandler := handlers.NewStakeholderHandler(stakeholderRepo)
 	jwtSecret := getEnv("JWT_SECRET", "super-secret-key")
 	tokenManager := auth.NewJWTManager(jwtSecret, 24*time.Hour)
-	authHandler := handlers.NewAuthHandler(userRepo, tokenManager)
+	authHandler := handlers.NewAuthHandler(userRepo, accountRepo, tokenManager, emailCollector)
 
 	api := router.Group("/api/v1")
 	{
