@@ -20,6 +20,14 @@ export class AppComponent implements OnInit {
     return this.authService.currentUser()?.role === 'Admin';
   }
 
+  get isAuditor() {
+    return this.authService.currentUser()?.role === 'Auditor';
+  }
+
+  get canAudit() {
+    return this.isAdmin || this.isAuditor;
+  }
+
   constructor() {
     effect(() => {
       if (this.authService.currentUser()) {

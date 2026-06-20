@@ -208,7 +208,7 @@
                 
                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                   <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ email.monitored_account }}</span>
-                  <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity" *ngIf="canAudit">
                     <button (click)="markAsAuditing(email.id, $event)" class="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Auditar</button>
                     <button (click)="markAsResolved(email.id, $event)" class="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 px-3 py-1.5 rounded-md text-xs font-bold transition-colors">Cerrar</button>
                   </div>
@@ -222,7 +222,7 @@
             <h3 class="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center justify-between pb-3 border-b border-white/10">
               <span class="flex items-center">
                 <div class="w-2 h-2 rounded-full bg-blue-400 mr-2 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></div>
-                En Auditoría Especial
+                {{ canAudit ? 'En Auditoría Especial' : 'En Seguimiento' }}
               </span>
               <span class="bg-blue-500/20 text-blue-300 border border-blue-500/30 py-1 px-3 rounded-full text-xs font-bold">{{ filteredAuditingEmails.length }}</span>
             </h3>
@@ -278,7 +278,7 @@
                 
                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                   <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{{ email.monitored_account }}</span>
-                  <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity" *ngIf="canAudit">
                     <button (click)="markAsResolved(email.id, $event)" class="bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 px-4 py-1.5 rounded-md text-xs font-bold transition-colors w-full shadow-lg">Finalizar Protocolo</button>
                   </div>
                 </div>
@@ -336,7 +336,7 @@
             <table class="min-w-full divide-y divide-white/10">
               <thead class="bg-slate-900/80">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-bold text-slate-200">Bandeja Auditada</th>
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-bold text-slate-200">Cuenta</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Remitente</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Asunto</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-bold text-slate-200">Categoría AI</th>
