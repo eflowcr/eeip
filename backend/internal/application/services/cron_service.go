@@ -17,31 +17,39 @@ type CronService interface {
 }
 
 type cronService struct {
-	cronInst     *cron.Cron
-	emailRepo    database.EmailRepository
-	accRepo      database.AccountRepository
-	stakeholders *database.StakeholderRepository
-	telegramSvc  TelegramService
-	mailerSvc    MailerService
+	cronInst       *cron.Cron
+	emailRepo      database.EmailRepository
+	accRepo        database.AccountRepository
+	stakeholders   *database.StakeholderRepository
+	telegramSvc    TelegramService
+	mailerSvc      MailerService
+	emailCollector EmailCollector
 }
 
-func NewCronService(emailRepo database.EmailRepository, accRepo database.AccountRepository, stakeholders *database.StakeholderRepository, telegramSvc TelegramService, mailerSvc MailerService) CronService {
+func NewCronService(emailRepo database.EmailRepository, accRepo database.AccountRepository, stakeholders *database.StakeholderRepository, telegramSvc TelegramService, mailerSvc MailerService, emailCollector EmailCollector) CronService {
 	// Create cron with standard parser and local timezone
 	c := cron.New(cron.WithLocation(time.Local))
 	
 	s := &cronService{
-		cronInst:     c,
-		emailRepo:    emailRepo,
-		accRepo:      accRepo,
-		stakeholders: stakeholders,
-		telegramSvc:  telegramSvc,
-		mailerSvc:    mailerSvc,
+		cronInst:       c,
+		emailRepo:      emailRepo,
+		accRepo:        accRepo,
+		stakeholders:   stakeholders,
+		telegramSvc:    telegramSvc,
+		mailerSvc:      mailerSvc,
+		emailCollector: emailCollector,
 	}
 
 	// Run at 08:00, 11:00, 14:00, 17:00 every day
 	_, err := c.AddFunc("0 8,11,14,17 * * *", s.runAlertsJob)
 	if err != nil {
 		log.Printf("Failed to add cron job: %v", err)
+	}
+
+	// Run IMAP sync every 5 minutes
+	_, errSync := c.AddFunc("*/5 * * * *", s.runSyncJob)
+	if errSync != nil {
+		log.Printf("Failed to add sync cron job: %v", errSync)
 	}
 
 	return s
@@ -134,6 +142,31 @@ func (s *cronService) runAlertsJob() {
 				smtpPort = 465
 			}
 			s.mailerSvc.SendEmailAlert(emailRecipients, "🚨 Resumen de Correos Críticos EEIP", htmlMsg, acc.IMAPHost, smtpPort, acc.IMAPUser, acc.IMAPPassword)
+		}
+	}
+}
+
+func (s *cronService) runSyncJob() {
+	log.Println("Running 5-minute IMAP sync cron job...")
+	ctx := context.Background()
+
+	accounts, err := s.accRepo.GetAccounts(ctx)
+	if err != nil {
+		log.Printf("Sync Job failed to fetch accounts: %v", err)
+		return
+	}
+
+	for _, acc := range accounts {
+		if !acc.IsActive {
+			continue // Skip inactive accounts
+		}
+		
+		log.Printf("Cron Syncing account: %s", acc.EmailAddress)
+		err := s.emailCollector.CollectEmails(ctx, &acc)
+		if err != nil {
+			log.Printf("Cron Sync failed for %s: %v", acc.EmailAddress, err)
+		} else {
+			log.Printf("Cron Sync successful for %s", acc.EmailAddress)
 		}
 	}
 }
