@@ -211,10 +211,11 @@ export class AppComponent implements OnInit {
   }
 
   loadInbox() {
-    this.http.get<any[]>(`${this.apiUrl}/emails?limit=100`).subscribe({
+    this.http.get<any[]>(`${this.apiUrl}/emails/all?limit=100`).subscribe({
       next: (data) => {
         if (data) {
           this.inbox = data;
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {
