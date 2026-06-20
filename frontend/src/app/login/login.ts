@@ -25,9 +25,41 @@ export class Login {
 
   constructor(private authService: AuthService) {}
 
+  onEmailChange(newEmail: string) {
+    this.email = newEmail;
+    if (!this.isLoginMode) {
+      this.imapUser = newEmail;
+      this.imapPort = 993;
+      
+      const parts = newEmail.split('@');
+      if (parts.length === 2 && parts[1]) {
+        const localPart = parts[0];
+        const domain = parts[1].toLowerCase();
+        
+        this.accountName = localPart;
+
+        if (domain === 'gmail.com') {
+          this.imapHost = 'imap.gmail.com';
+        } else if (domain === 'outlook.com' || domain === 'hotmail.com') {
+          this.imapHost = 'outlook.office365.com';
+        } else if (domain === 'yahoo.com') {
+          this.imapHost = 'imap.mail.yahoo.com';
+        } else {
+          this.imapHost = `imap.${domain}`;
+        }
+      } else {
+        this.accountName = newEmail;
+        this.imapHost = '';
+      }
+    }
+  }
+
   toggleMode() {
     this.isLoginMode = !this.isLoginMode;
     this.errorMessage = '';
+    if (!this.isLoginMode && this.email) {
+      this.onEmailChange(this.email);
+    }
   }
 
   submit() {
