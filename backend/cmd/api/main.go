@@ -74,7 +74,9 @@ func main() {
 	} else {
 		aiEngine = services.NewAIClassificationEngine(openAIKey)
 	}
-	emailCollector := services.NewEmailCollector(emailRepo, aiEngine)
+	telegramToken := getEnv("TELEGRAM_BOT_TOKEN", "")
+	telegramSvc := services.NewTelegramService(telegramToken)
+	emailCollector := services.NewEmailCollector(emailRepo, aiEngine, stakeholderRepo, telegramSvc)
 	summaryEngine := services.NewSummaryEngine(openAIKey)
 
 	// Handlers

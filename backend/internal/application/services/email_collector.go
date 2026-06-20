@@ -21,12 +21,14 @@ type EmailCollector interface {
 }
 
 type emailCollector struct {
-	repo       database.EmailRepository
-	aiEngine   AIClassificationEngine
+	repo         database.EmailRepository
+	aiEngine     AIClassificationEngine
+	stakeholders *database.StakeholderRepository
+	telegramSvc  TelegramService
 }
 
-func NewEmailCollector(repo database.EmailRepository, aiEngine AIClassificationEngine) EmailCollector {
-	return &emailCollector{repo: repo, aiEngine: aiEngine}
+func NewEmailCollector(repo database.EmailRepository, aiEngine AIClassificationEngine, stakeholders *database.StakeholderRepository, telegramSvc TelegramService) EmailCollector {
+	return &emailCollector{repo: repo, aiEngine: aiEngine, stakeholders: stakeholders, telegramSvc: telegramSvc}
 }
 
 func (s *emailCollector) CollectEmails(ctx context.Context, account *models.EmailAccount) error {
@@ -168,6 +170,11 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 			log.Printf("Failed to save email %s: %v", msgID, err)
 		} else {
 			log.Printf("Processed email: %s", subject)
+			
+			// Alert logic for critical emails
+			if email.Priority != nil && (*email.Priority == "Crítico" || *email.Priority == "Critical") {
+				go s.triggerAlerts(email)
+			}
 		}
 	}
 
@@ -181,4 +188,33 @@ func (s *emailCollector) CollectEmails(ctx context.Context, account *models.Emai
 	// Here we should update the account in DB, omitted for brevity
 
 	return nil
+}
+
+func (s *emailCollector) triggerAlerts(email *models.Email) {
+	shs, err := s.stakeholders.GetAll()
+	if err != nil {
+		log.Printf("Failed to get stakeholders for alert: %v", err)
+		return
+	}
+	
+	subject := "Sin Asunto"
+	if email.Subject != nil { subject = *email.Subject }
+	action := "N/A"
+	if email.RecommendedAction != nil { action = *email.RecommendedAction }
+	explanation := "N/A"
+	if email.ClassificationExpl != nil { explanation = *email.ClassificationExpl }
+
+	msg := fmt.Sprintf("🚨 <b>NUEVO CORREO CRÍTICO</b>\n\n<b>De:</b> %s\n<b>Asunto:</b> %s\n<b>Acción Recomendada:</b> %s\n<b>Explicación:</b> %s",
+		email.SenderEmail, subject, action, explanation)
+
+	for _, sh := range shs {
+		if sh.TelegramChatID != "" {
+			err := s.telegramSvc.SendMessage(sh.TelegramChatID, msg)
+			if err != nil {
+				log.Printf("Failed to send telegram to %s: %v", sh.Name, err)
+			} else {
+				log.Printf("Sent telegram alert to %s", sh.Name)
+			}
+		}
+	}
 }
